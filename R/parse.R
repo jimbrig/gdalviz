@@ -25,7 +25,7 @@ parse_pipeline <- function(x, contract = gdalviz_contract()) {
   chunks <- Filter(function(ch) length(ch) > 0, chunks)
 
   pipeline_options <- list()
-  if (length(chunks) > 0 && !is_step_command(chunk_command(chunks[[1]]), contract)) {
+  if (length(chunks) > 0 && startsWith(chunk_command(chunks[[1]]), "-")) {
     pipeline_options <- parse_step_args("", chunks[[1]], contract)$args
     chunks <- chunks[-1]
   }
