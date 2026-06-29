@@ -1,11 +1,21 @@
 Package: gdalviz
-Title: What the Package Does (One Line, Title Case)
+Title: Visualize Modern GDAL Pipelines 
 Version: 0.0.0.9000
 Authors@R: 
     person("Jimmy", "Briggs", , "jimmy.briggs@jimbrig.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7489-8787"))
-Description: What the package does (one paragraph).
+Description: Produces interactive or static visualizations of modern GDAL CLI pipelines.
 License: MIT + file LICENSE
+Imports: 
+    cli,
+    crayon,
+    jsonlite,
+    rlang,
+    tibble
+Suggests: 
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)

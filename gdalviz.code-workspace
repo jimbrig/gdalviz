@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"[r]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "Posit.air-vscode",
+    },
+    "[quarto]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "quarto.quarto",
+    },
+  },
+  "extensions": {
+    "recommendations": [
+      "reditorsupport.r",
+      "reditorsupport.r-syntax",
+      "Posit.air-vscode",
+      "rdebugger.r-debugger",
+      "quarto.quarto",
+      "rust-lang.rust",
+    ],
+  }
+}

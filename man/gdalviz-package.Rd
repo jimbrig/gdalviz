@@ -4,9 +4,9 @@
 \name{gdalviz-package}
 \alias{gdalviz}
 \alias{gdalviz-package}
-\title{gdalviz: What the Package Does (One Line, Title Case)}
+\title{gdalviz: Visualize Modern GDAL Pipelines}
 \description{
-What the package does (one paragraph).
+Produces interactive or static visualizations of modern GDAL CLI pipelines.
 }
 \author{
 \strong{Maintainer}: Jimmy Briggs \email{jimmy.briggs@jimbrig.com} (\href{https://orcid.org/0000-0002-7489-8787}{ORCID})

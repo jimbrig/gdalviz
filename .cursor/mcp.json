@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "firecrawl": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": [
+        "--bun",
+        "-y",
+        "firecrawl-mcp@latest"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "${env:FIRECRAWL_API_KEY}"
+      },
+      "envFile": "${workspaceFolder}/.cursor/mcp.env"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["--bun", "-y", "playwright-mcp@latest"]
+    }
+  },
+  "inputs": [
+    {
+      "id": "exa_api_key",
+      "type": "promptString",
+      "description": "Exa API Key (get from https://exa.ai/account/api-keys)",
+      "password": true
+    },
+    {
+      "id": "firecrawl_api_key",
+      "type": "promptString",
+      "description": "Firecrawl API Key (get from https://www.firecrawl.dev/app/api-keys)",
+      "password": true
+    }
+  ]
+}

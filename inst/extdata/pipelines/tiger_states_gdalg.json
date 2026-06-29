@@ -1,0 +1,5 @@
+{
+  "type":"gdal_streamed_alg",
+  "command_line":"gdal vector pipeline read --open-option ENCODING=UTF-8 --open-option ADJUST_GEOM_TYPE=FIRST_SHAPE --open-option AUTO_REPACK=YES --open-option DBF_EOF_CHAR=YES --input \/vsizip\/\/vsicurl\/https:\/\/www2.census.gov\/geo\/tiger\/TIGER2025\/STATE\/tl_2025_us_state.zip\/tl_2025_us_state.shp --input-layer tl_2025_us_state ! filter --where \"STATEFP NOT IN ('02','15','60','66','69','72','74','78')\" ! sql --sql \"SELECT GEOID AS geoid, STATEFP AS state_fips, STUSPS AS state_abbr, NAME AS state_name, ALAND AS area_land_m2, AWATER AS area_water_m2 FROM \\\"tl_2025_us_state\\\"\" ! make-valid ! set-geom-type --multi --skip ! reproject --output-crs EPSG:4326 ! sort --method hilbert",
+  "gdal_version":"3130000"
+}
