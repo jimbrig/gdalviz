@@ -11,6 +11,7 @@
 #' @return A DiagrammeR `grViz` htmlwidget.
 #' @export
 render_diagrammer <- function(graph, direction = c("TB", "LR"), theme = c("light", "dark")) {
+  rlang::check_installed("DiagrammeR")
   direction <- match.arg(direction)
   theme <- match.arg(theme)
   dot <- pipeline_dot(graph, direction = direction, theme = theme)
