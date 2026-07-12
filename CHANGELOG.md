@@ -4,6 +4,16 @@
 
 ## <!-- 0 -->🚀 Features
 
+- **branding:** Scripted hex logo via hexSticker with package palette subplot ([e48044c](https://github.com/jimbrig/gdalviz/commit/e48044c51d8afa55fde2bcc8a4393513d3e75582))  - (Jimmy Briggs)
+
+## <!-- 3 -->📚 Documentation
+
+- **readme:** Revamp with scripted figures, r-universe install, and learn-more links ([56e06b6](https://github.com/jimbrig/gdalviz/commit/56e06b6be95dc9d5dcce9c99bfd2cf3964eb3772))  - (Jimmy Briggs)
+
+# [0.1.0](https://github.com/jimbrig/gdalviz/tree/v0.1.0) - (2026-07-12)
+
+## <!-- 0 -->🚀 Features
+
 - **cicd:** R CMD check matrix, git-cliff changelog automation, and quarto setup for pkgdown ([832e951](https://github.com/jimbrig/gdalviz/commit/832e9519b13e84595dfcf6ba817e996d8a41a4e0))  - (Jimmy Briggs)
 - **branding:** Hex logo, pkgdown favicons, README badges and corrected examples ([d74475d](https://github.com/jimbrig/gdalviz/commit/d74475d0d7995eb6a640d934e4cbabb90453ea35))  - (Jimmy Briggs)
 - **contract:** Flatten input/output argument groups and enforce mutual-exclusion linting ([942d3e1](https://github.com/jimbrig/gdalviz/commit/942d3e17518c879622b16536c8b8f04ead87a396))  - (Jimmy Briggs)
@@ -17,6 +27,7 @@
 
 ## <!-- 1 -->🐛 Bug Fixes
 
+- **cicd:** Pre-install package so quarto vignettes build during windows check ([4702f94](https://github.com/jimbrig/gdalviz/commit/4702f94279ffb0879a6a010eabb5f4731733ced5))  - (Jimmy Briggs)
 - **render:** Dashed config/implicit edge styling in g6 and graphviz backends ([72185d6](https://github.com/jimbrig/gdalviz/commit/72185d635f5081f701b9328f41701fa1ea44aa66))  - (Jimmy Briggs)
 
 ## <!-- 14 -->🎉 Initial Commit
@@ -48,6 +59,7 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> ([fc5ef41](
 
 ## <!-- 30 -->📝 Other
 
+- Update changelog ([a6eb88a](https://github.com/jimbrig/gdalviz/commit/a6eb88a6ff562f79cf89c3e21255c88667d77e70))  - (jimbrig)
 - PR [#1](https://github.com/jimbrig/gdalviz/pull/1): contract-based pipeline linting and v0 package polish ([ab0230f](https://github.com/jimbrig/gdalviz/commit/ab0230f966406c230118d77aaff7fb3f5e0d124f))  - (Jimmy Briggs)
 
 ## <!-- 6 -->🧪 Testing
