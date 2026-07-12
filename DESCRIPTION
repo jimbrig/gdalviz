@@ -1,6 +1,6 @@
 Package: gdalviz
 Title: Visualize Modern GDAL Pipelines
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Jimmy", "Briggs", , "jimmy.briggs@jimbrig.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7489-8787"))
@@ -9,7 +9,7 @@ Maintainer: Jimmy Briggs <jimmy.briggs@jimbrig.com>
 Description: Produces interactive or static visualizations of modern GDAL
     CLI pipelines.
 License: MIT + file LICENSE
-URL: http://docs.jimbrig.com/gdalviz/
+URL: http://docs.jimbrig.com/gdalviz/, https://github.com/jimbrig/gdalviz
 Imports: 
     cli,
     crayon,
@@ -22,10 +22,14 @@ Imports:
     tibble,
     utils
 Suggests: 
+    knitr,
+    quarto,
     spelling,
     testthat (>= 3.0.0)
+VignetteBuilder: quarto
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
+BugReports: https://github.com/jimbrig/gdalviz/issues
