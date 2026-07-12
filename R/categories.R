@@ -65,6 +65,7 @@ gdalviz_palette <- function(theme = c("light", "dark")) {
     branch = "#64748b",
     inspect = "#ea580c",
     geometry = "#d97706",
+    runtime = "#334155",
     other = "#475569"
   )
 }
@@ -81,6 +82,7 @@ gdalviz_category_icon <- function(category) {
     branch = "split",
     inspect = "search",
     geometry = "shapes",
+    runtime = "gear",
     other = "dots"
   )
   icons[[category]] %||% "dots"
@@ -97,6 +99,7 @@ gdalviz_category_label <- function(category) {
     branch = "Branch",
     inspect = "Inspect",
     geometry = "Geometry",
+    runtime = "Config",
     other = "Step"
   )
   labels[[category]] %||% "Step"

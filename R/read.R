@@ -20,7 +20,27 @@ read_gdalg <- function(x, contract = gdalviz_contract()) {
     x
   }
 
+  # multiline shell scripts (trailing ` or \ continuations) are normalized
+  # before parsing so pasted powershell/bash invocations just work
+  shell <- detect_script_shell(command_line)
+  if (!is.null(shell)) {
+    command_line <- normalize_script(command_line, shell = shell, require_prefix = FALSE)
+  }
+
   parse_pipeline(command_line, contract = contract)
+}
+
+detect_script_shell <- function(x) {
+  if (!grepl("\n", x, fixed = TRUE)) {
+    return(NULL)
+  }
+  if (grepl("`[ \t]*\r?\n", x)) {
+    return("powershell")
+  }
+  if (grepl("\\\\[ \t]*\r?\n", x)) {
+    return("bash")
+  }
+  NULL
 }
 
 is_existing_file <- function(x) {

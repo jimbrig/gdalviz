@@ -348,7 +348,14 @@ read_script <- function(path, shell = NULL, contract = gdalviz_contract()) {
 
 #' @keywords internal
 #' @noRd
-normalize_script <- function(text, shell = "bash") {
+normalize_script <- function(text, shell = "bash", require_prefix = TRUE) {
+  # powershell native-command quoting: `\"` passes a literal quote through to
+  # gdal, so it maps to a plain quote for the pipeline tokenizer. this runs
+  # before heredoc collapse, which emits its own (intentional) \" escapes.
+  if (shell == "powershell") {
+    text <- gsub("\\\\\"", "\"", text)
+  }
+
   # 1. collapse here-strings / heredocs into single double-quoted tokens
   text <- collapse_heredocs(text, shell = shell)
 
@@ -379,6 +386,9 @@ normalize_script <- function(text, shell = "bash") {
   whole <- paste(joined, collapse = " ")
   m <- regexpr("gdal\\s+(raster|vector)?\\s*pipeline.*$", whole, perl = TRUE, ignore.case = TRUE)
   if (m == -1) {
+    if (!isTRUE(require_prefix)) {
+      return(trimws(gsub("\\s+", " ", whole)))
+    }
     cli::cli_abort(c(
       "Could not find a {.code gdal ... pipeline} invocation in the script.",
       "i" = "Provide a script that contains a {.code gdal vector pipeline} or {.code gdal raster pipeline} command."

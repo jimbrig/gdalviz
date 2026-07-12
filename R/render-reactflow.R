@@ -60,7 +60,6 @@ render_reactflow <- function(
   payload <- list(
     nodes = reactflow_nodes(graph$nodes),
     edges = reactflow_edges(graph$edges),
-    globals = as.list(graph$globals %||% character(0)),
     meta = list(
       command_line = graph$command_line %||% NA_character_,
       pipeline_type = graph$pipeline_type %||% NA_character_
@@ -146,6 +145,7 @@ reactflow_nodes <- function(nodes) {
       ordering = na_null(n$ordering),
       branch_role = n$branch_role,
       depth = n$depth,
+      implicit = isTRUE(n$implicit),
       args = n$args[[1]]
     )
   })

@@ -25,8 +25,24 @@ pipeline_graph <- function(x, contract = gdalviz_contract()) {
   ctx$edges <- list()
   ctx$contract <- contract
 
+  # dedicated runtime-configuration node (--config / --progress / ...)
+  config_id <- NULL
+  if (length(x$pipeline_options) > 0) {
+    config_id <- add_config_node(ctx, x$pipeline_options)
+  }
+  first_main_id <- if (length(x$steps) > 0) paste0("n", ctx$id + 1L) else NULL
+
   state <- empty_state()
-  walk_chain(ctx, x$steps, prev_id = NULL, state = state, depth = 0L, branch_role = "main")
+  last_id <- walk_chain(ctx, x$steps, prev_id = NULL, state = state, depth = 0L, branch_role = "main")
+
+  if (!is.null(config_id) && !is.null(first_main_id)) {
+    add_edge(ctx, config_id, first_main_id, kind = "config", badge = NA_character_)
+  }
+
+  # GDALG files omit the terminal write step; surface the streamed sink
+  if (pipeline_omits_sink(x)) {
+    add_implicit_write_node(ctx, prev_id = last_id)
+  }
 
   structure(
     list(
@@ -91,7 +107,8 @@ add_step_node <- function(ctx, step, prev_id, state, depth, branch_role) {
     validity = state$validity,
     ordering = state$ordering,
     branch_role = branch_role,
-    depth = depth
+    depth = depth,
+    implicit = FALSE
   )
   ctx$nodes[[length(ctx$nodes) + 1L]] <- node
 
@@ -124,6 +141,85 @@ add_step_node <- function(ctx, step, prev_id, state, depth, branch_role) {
   }
 
   list(id = id, state = state)
+}
+
+add_config_node <- function(ctx, pipeline_options) {
+  ctx$id <- ctx$id + 1L
+  id <- paste0("n", ctx$id)
+
+  n_config <- sum(vapply(
+    pipeline_options,
+    function(a) identical(a$kind, "flag") && identical(resolve_arg_name(a$flag %||% ""), "config"),
+    logical(1)
+  ))
+  description <- if (n_config > 0) {
+    paste0("Runtime configuration (", n_config, " config option", if (n_config == 1) "" else "s", ")")
+  } else {
+    "Runtime configuration"
+  }
+
+  ctx$nodes[[length(ctx$nodes) + 1L]] <- list(
+    id = id,
+    command = "config",
+    category = "runtime",
+    category_label = gdalviz_category_label("runtime"),
+    verb = "runtime configuration",
+    code = paste(render_args(pipeline_options, quoter = quote_cmdline), collapse = " "),
+    args = step_args_payload(list(args = pipeline_options)),
+    description = description,
+    icon = gdalviz_category_icon("runtime"),
+    color = gdalviz_palette()[["runtime"]],
+    docs_url = "https://gdal.org/en/stable/user/configoptions.html",
+    crs = NA_character_,
+    geom = NA_character_,
+    fields = NA_character_,
+    validity = NA_character_,
+    ordering = NA_character_,
+    branch_role = "config",
+    depth = 0L,
+    implicit = FALSE
+  )
+  id
+}
+
+pipeline_omits_sink <- function(x) {
+  if (length(x$steps) == 0) {
+    return(FALSE)
+  }
+  last <- x$steps[[length(x$steps)]]
+  !identical(gdalviz_category(last$command), "sink") && !identical(last$command, "info")
+}
+
+add_implicit_write_node <- function(ctx, prev_id) {
+  if (is.null(prev_id)) {
+    return(invisible(NULL))
+  }
+  ctx$id <- ctx$id + 1L
+  id <- paste0("n", ctx$id)
+
+  ctx$nodes[[length(ctx$nodes) + 1L]] <- list(
+    id = id,
+    command = "write",
+    category = "sink",
+    category_label = gdalviz_category_label("sink"),
+    verb = "! write",
+    code = "--output-format streamed",
+    args = list(),
+    description = "Streamed output (write step omitted in GDALG)",
+    icon = gdalviz_category_icon("sink"),
+    color = gdalviz_palette()[["sink"]],
+    docs_url = "https://gdal.org/en/stable/programs/gdal_vector_pipeline.html",
+    crs = NA_character_,
+    geom = NA_character_,
+    fields = NA_character_,
+    validity = NA_character_,
+    ordering = NA_character_,
+    branch_role = "main",
+    depth = 0L,
+    implicit = TRUE
+  )
+  add_edge(ctx, prev_id, id, kind = "main", badge = NA_character_)
+  invisible(id)
 }
 
 add_edge <- function(ctx, from, to, kind, badge) {
@@ -460,7 +556,8 @@ nodes_to_tibble <- function(nodes) {
       validity = character(0),
       ordering = character(0),
       branch_role = character(0),
-      depth = integer(0)
+      depth = integer(0),
+      implicit = logical(0)
     ))
   }
   tibble::tibble(
@@ -481,7 +578,8 @@ nodes_to_tibble <- function(nodes) {
     validity = vapply(nodes, function(n) n$validity %||% NA_character_, character(1)),
     ordering = vapply(nodes, function(n) n$ordering %||% NA_character_, character(1)),
     branch_role = vapply(nodes, `[[`, character(1), "branch_role"),
-    depth = vapply(nodes, `[[`, integer(1), "depth")
+    depth = vapply(nodes, `[[`, integer(1), "depth"),
+    implicit = vapply(nodes, function(n) isTRUE(n$implicit), logical(1))
   )
 }
 

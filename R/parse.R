@@ -26,8 +26,15 @@ parse_pipeline <- function(x, contract = gdalviz_contract()) {
 
   pipeline_options <- list()
   if (length(chunks) > 0 && startsWith(chunk_command(chunks[[1]]), "-")) {
-    pipeline_options <- parse_step_args("", chunks[[1]], contract)$args
-    chunks <- chunks[-1]
+    # the first step may follow the globals without a `!` separator
+    # (e.g. `--config A=B read --input ...`), so split at the step boundary
+    split <- split_globals_chunk(chunks[[1]], contract)
+    pipeline_options <- parse_step_args("", split$globals, contract)$args
+    if (length(split$step) > 0) {
+      chunks[[1]] <- split$step
+    } else {
+      chunks <- chunks[-1]
+    }
   }
 
   steps <- lapply(chunks, parse_step, contract = contract)
@@ -155,6 +162,52 @@ split_top_level <- function(items, sep) {
   }
   chunks[[length(chunks) + 1L]] <- current
   chunks
+}
+
+# walk a leading globals chunk and find where an implicit first step begins,
+# using the contract's pipeline-level argument types to pair flags with values
+split_globals_chunk <- function(chunk, contract) {
+  n <- length(chunk)
+  i <- 1L
+  boundary <- n + 1L
+
+  while (i <= n) {
+    it <- chunk[[i]]
+
+    if (is.character(it) && !startsWith(it, "-")) {
+      if (is_step_command(it, contract)) {
+        boundary <- i
+        break
+      }
+      i <- i + 1L
+      next
+    }
+
+    if (!is.character(it)) {
+      i <- i + 1L
+      next
+    }
+
+    # flag token: decide whether it consumes the next token as its value
+    if (grepl("=", it, fixed = TRUE)) {
+      i <- i + 1L
+      next
+    }
+    is_bool <- pipeline_arg_is_boolean(it, contract)
+    nxt <- if (i < n) chunk[[i + 1L]] else NULL
+    nxt_is_value <- !is.null(nxt) && is.character(nxt) && !is_flag(nxt)
+    takes_value <- if (is.na(is_bool)) {
+      nxt_is_value && !is_step_command(nxt, contract)
+    } else {
+      !is_bool
+    }
+    i <- i + (if (takes_value && nxt_is_value) 2L else 1L)
+  }
+
+  list(
+    globals = if (boundary > 1L) chunk[seq_len(boundary - 1L)] else list(),
+    step = if (boundary <= n) chunk[boundary:n] else list()
+  )
 }
 
 # --- step parsing ------------------------------------------------------------
