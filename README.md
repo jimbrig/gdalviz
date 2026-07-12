@@ -5,29 +5,49 @@
 [![R CMD CHECK](https://github.com/jimbrig/gdalviz/actions/workflows/check.yml/badge.svg)](https://github.com/jimbrig/gdalviz/actions/workflows/check.yml)
 [![pkgdown](https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml/badge.svg)](https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml)
 [![Automate Changelog](https://github.com/jimbrig/gdalviz/actions/workflows/changelog.yml/badge.svg)](https://github.com/jimbrig/gdalviz/actions/workflows/changelog.yml)
+[![r-universe](https://jimbrig.r-universe.dev/badges/gdalviz)](https://jimbrig.r-universe.dev/gdalviz)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`gdalviz` provides a modern framework for parsing, validating, and visualizing GDAL pipeline algorithms (for example `gdal vector pipeline ! ...` and GDALG `command_line` definitions).
+`gdalviz` parses, validates, and visualizes modern GDAL CLI pipelines
+(`gdal vector pipeline ! ...` command lines and GDALG `.gdalg.json` files),
+turning them into diagrams that read like *what happens to the data* rather
+than shell syntax.
 
-- **Contract-driven**: steps and arguments are validated against GDAL's own `--json-usage` metadata (bundled snapshot, refreshable from your installed GDAL via `gdalviz_refresh_contract()`).
-- **Flexible input**: raw pipeline strings, `.gdalg.json` files, and pasted bash/PowerShell scripts (line continuations and heredocs are normalized automatically).
-- **Semantic graphs**: `pipeline_graph()` builds a renderer-agnostic dataflow model with category classification, feature-stream state propagation (CRS, geometry, fields), runtime `--config` grouping, the GDALG-omitted write step, and merging of long repeated-step runs (e.g. `set-field-type` chains).
-- **Renderers**: interactive React Flow (`render_reactflow()`, bundled - no node toolchain needed), AntV G6 (`render_g6()`), and static Graphviz (`render_diagrammer()`).
+- **Contract-driven** - steps and arguments are validated against GDAL's own
+  `--json-usage` metadata (bundled snapshot, refreshable from your installed
+  GDAL via `gdalviz_refresh_contract()`), including required arguments, enum
+  choices, and mutually exclusive groups.
+- **Flexible input** - raw pipeline strings, `.gdalg.json` files, and pasted
+  bash / PowerShell scripts (line continuations, heredocs, and `\"` quoting
+  are normalized automatically).
+- **Semantic graphs** - `pipeline_graph()` builds a renderer-agnostic
+  dataflow model: category classification, feature-stream state propagation
+  (CRS, geometry type, field schema), runtime `--config` grouping, the
+  GDALG-omitted write step as an explicit streamed sink, and merging of long
+  repeated-step runs (e.g. one-field-at-a-time `set-field-type` chains).
+- **Renderers** - interactive React Flow (`render_reactflow()`, bundled - no
+  node toolchain needed), static Graphviz (`render_diagrammer()`), and AntV
+  G6 (`render_g6()`).
+- **Round-trip** - serialize back to canonical command lines
+  (`render_command_line()`), formatted bash / PowerShell scripts
+  (`render_script()`), or GDALG JSON (`as_gdalg()` / `write_gdalg()`).
 
 ## Installation
 
-You can install the development version of gdalviz like so:
+```r
+# from r-universe (binaries)
+install.packages("gdalviz", repos = c("https://jimbrig.r-universe.dev", "https://cloud.r-project.org"))
 
-```R
+# or from github
 pak::pak("jimbrig/gdalviz")
 ```
 
-## Example
+## Usage
 
-Parse, validate, and render a modern GDAL vector pipeline:
+Parse, lint, and render a pipeline:
 
-``` r
+```r
 library(gdalviz)
 
 cmd <- paste(
@@ -40,23 +60,60 @@ cmd <- paste(
 )
 
 p <- parse_pipeline(cmd)
-v <- validate_pipeline(p, strict = FALSE)
-issues <- lint_pipeline(p)
+lint_pipeline(p)       # one row per contract violation (none here)
 
-g <- pipeline_graph(p)
-render_diagrammer(g)
+g <- pipeline_graph(p) # renderer-agnostic dataflow model
+render_diagrammer(g)   # static graphviz rendering
 ```
 
-![readme-example-1](man/figures/readme-example-1.png)
+![static graphviz rendering of the parcels pipeline](man/figures/readme-example-1.png)
 
-or use the *react-flow* based interactive renderer:
+The interactive React Flow renderer adds pan/zoom, a minimap, and a
+click-to-open inspector with each step's arguments, propagated stream state,
+and GDAL docs link. GDALG files work directly - note the implicit *streamed
+output* sink attached where GDALG omits the final write:
 
-```R
+```r
 system.file("extdata", "pipelines", "tiger_states.gdalg.json", package = "gdalviz") |>
   pipeline_graph() |>
   render_reactflow(theme = "dark", minimap = FALSE, direction = "TB")
 ```
 
-![readme-example-2](man/figures/readme-example-2.png)
+![interactive react flow rendering of the TIGER states GDALG pipeline](man/figures/readme-example-2.png)
 
-<!-- CHECKPOINT id="ckpt_mrh2jchk_95i970" time="2026-07-12T00:42:00.056Z" note="auto" fixes=0 questions=0 highlights=0 sections="" -->
+Pasted shell scripts (bash or PowerShell) parse as-is, and everything
+round-trips back out:
+
+```r
+render_command_line(p)             # canonical single-line command
+cat(render_script(p, shell = "bash"))  # formatted multi-line script
+write_gdalg(p, "parcels.gdalg.json")   # GDALG specification
+```
+
+## Learn more
+
+- [Getting started vignette](https://docs.jimbrig.com/gdalviz/articles/gdalviz.html) -
+  parse, validate, graph, render, round-trip
+- [Pipeline gallery](https://docs.jimbrig.com/gdalviz/articles/pipeline-gallery.html) -
+  live interactive diagrams of real-world pipelines (tee branching,
+  config-heavy runs, merged schema chains)
+- [Function reference](https://docs.jimbrig.com/gdalviz/reference/index.html)
+- [Changelog](https://docs.jimbrig.com/gdalviz/news/index.html)
+
+## Development
+
+The interactive widget's TypeScript/React source lives in
+[`srcjs/`](srcjs/README.md) (React Flow + dagre, built with Vite/Bun); the
+compiled bundle is committed to `inst/htmlwidgets/` so package users never
+need a node toolchain. Common tasks are wrapped in the `Makefile`
+(`make docs`, `make js`, `make test`, `make check`, `make site`), and
+`AGENTS.md` documents the architecture and conventions.
+
+## Related work
+
+- [GDAL CLI & pipelines](https://gdal.org/en/stable/programs/gdal_vector_pipeline.html) -
+  the `gdal vector pipeline` algorithm and GDALG format this package visualizes
+- [gdalraster](https://usdaforestservice.github.io/gdalraster/) - R bindings
+  to the GDAL API, including the `GDALAlg` algorithm interface
+- [dplyneage](https://github.com/tgerke/dplyneage) - React Flow lineage
+  diagrams for dplyr/dbplyr pipelines (kindred spirit for tabular pipelines)
