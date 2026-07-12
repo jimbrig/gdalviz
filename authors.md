@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/jimbrig/gdalviz/blob/v0.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/jimbrig/gdalviz/blob/main/DESCRIPTION)
 
 Briggs J (2026). *gdalviz: Visualize Modern GDAL Pipelines*. R package
 version 0.1.0, <http://docs.jimbrig.com/gdalviz/>.

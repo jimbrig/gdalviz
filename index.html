@@ -66,28 +66,33 @@
 </div>
 <!-- badges: start -->
 
-<p><code>gdalviz</code> provides a modern framework for parsing, validating, and visualizing GDAL pipeline algorithms (for example <code>gdal vector pipeline ! ...</code> and GDALG <code>command_line</code> definitions).</p>
+<p><code>gdalviz</code> parses, validates, and visualizes modern GDAL CLI pipelines (<code>gdal vector pipeline ! ...</code> command lines and GDALG <code>.gdalg.json</code> files), turning them into diagrams that read like <em>what happens to the data</em> rather than shell syntax.</p>
 <ul>
 <li>
-<strong>Contract-driven</strong>: steps and arguments are validated against GDAL’s own <code>--json-usage</code> metadata (bundled snapshot, refreshable from your installed GDAL via <code><a href="reference/gdalviz_refresh_contract.html">gdalviz_refresh_contract()</a></code>).</li>
+<strong>Contract-driven</strong> - steps and arguments are validated against GDAL’s own <code>--json-usage</code> metadata (bundled snapshot, refreshable from your installed GDAL via <code><a href="reference/gdalviz_refresh_contract.html">gdalviz_refresh_contract()</a></code>), including required arguments, enum choices, and mutually exclusive groups.</li>
 <li>
-<strong>Flexible input</strong>: raw pipeline strings, <code>.gdalg.json</code> files, and pasted bash/PowerShell scripts (line continuations and heredocs are normalized automatically).</li>
+<strong>Flexible input</strong> - raw pipeline strings, <code>.gdalg.json</code> files, and pasted bash / PowerShell scripts (line continuations, heredocs, and <code>\"</code> quoting are normalized automatically).</li>
 <li>
-<strong>Semantic graphs</strong>: <code><a href="reference/pipeline_graph.html">pipeline_graph()</a></code> builds a renderer-agnostic dataflow model with category classification, feature-stream state propagation (CRS, geometry, fields), runtime <code>--config</code> grouping, the GDALG-omitted write step, and merging of long repeated-step runs (e.g. <code>set-field-type</code> chains).</li>
+<strong>Semantic graphs</strong> - <code><a href="reference/pipeline_graph.html">pipeline_graph()</a></code> builds a renderer-agnostic dataflow model: category classification, feature-stream state propagation (CRS, geometry type, field schema), runtime <code>--config</code> grouping, the GDALG-omitted write step as an explicit streamed sink, and merging of long repeated-step runs (e.g. one-field-at-a-time <code>set-field-type</code> chains).</li>
 <li>
-<strong>Renderers</strong>: interactive React Flow (<code><a href="reference/render_reactflow.html">render_reactflow()</a></code>, bundled - no node toolchain needed), AntV G6 (<code><a href="reference/render_g6.html">render_g6()</a></code>), and static Graphviz (<code><a href="reference/render_diagrammer.html">render_diagrammer()</a></code>).</li>
+<strong>Renderers</strong> - interactive React Flow (<code><a href="reference/render_reactflow.html">render_reactflow()</a></code>, bundled - no node toolchain needed), static Graphviz (<code><a href="reference/render_diagrammer.html">render_diagrammer()</a></code>), and AntV G6 (<code><a href="reference/render_g6.html">render_g6()</a></code>).</li>
+<li>
+<strong>Round-trip</strong> - serialize back to canonical command lines (<code><a href="reference/render_command_line.html">render_command_line()</a></code>), formatted bash / PowerShell scripts (<code><a href="reference/render_script.html">render_script()</a></code>), or GDALG JSON (<code><a href="reference/as_gdalg.html">as_gdalg()</a></code> / <code><a href="reference/write_gdalg.html">write_gdalg()</a></code>).</li>
 </ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of gdalviz like so:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"jimbrig/gdalviz"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># from r-universe (binaries)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"gdalviz"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://jimbrig.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># or from github</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"jimbrig/gdalviz"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Parse, validate, and render a modern GDAL vector pipeline:</p>
+<p>Parse, lint, and render a pipeline:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://docs.jimbrig.com/gdalviz/">gdalviz</a></span><span class="op">)</span></span>
 <span></span>
@@ -101,23 +106,55 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/parse_pipeline.html">parse_pipeline</a></span><span class="op">(</span><span class="va">cmd</span><span class="op">)</span></span>
-<span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/validate_pipeline.html">validate_pipeline</a></span><span class="op">(</span><span class="va">p</span>, strict <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">issues</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/lint_pipeline.html">lint_pipeline</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/lint_pipeline.html">lint_pipeline</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>       <span class="co"># one row per contract violation (none here)</span></span>
 <span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pipeline_graph.html">pipeline_graph</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/render_diagrammer.html">render_diagrammer</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pipeline_graph.html">pipeline_graph</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="co"># renderer-agnostic dataflow model</span></span>
+<span><span class="fu"><a href="reference/render_diagrammer.html">render_diagrammer</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span>   <span class="co"># static graphviz rendering</span></span></code></pre></div>
 <div class="float">
-<img src="reference/figures/readme-example-1.png" alt="readme-example-1"><div class="figcaption">readme-example-1</div>
+<img src="reference/figures/readme-example-1.png" alt="static graphviz rendering of the parcels pipeline"><div class="figcaption">static graphviz rendering of the parcels pipeline</div>
 </div>
-<p>or use the <em>react-flow</em> based interactive renderer:</p>
+<p>The interactive React Flow renderer adds pan/zoom, a minimap, and a click-to-open inspector with each step’s arguments, propagated stream state, and GDAL docs link. GDALG files work directly - note the implicit <em>streamed output</em> sink attached where GDALG omits the final write:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pipelines"</span>, <span class="st">"tiger_states.gdalg.json"</span>, package <span class="op">=</span> <span class="st">"gdalviz"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/pipeline_graph.html">pipeline_graph</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/render_reactflow.html">render_reactflow</a></span><span class="op">(</span>theme <span class="op">=</span> <span class="st">"dark"</span>, minimap <span class="op">=</span> <span class="cn">FALSE</span>, direction <span class="op">=</span> <span class="st">"TB"</span><span class="op">)</span></span></code></pre></div>
 <div class="float">
-<img src="reference/figures/readme-example-2.png" alt="readme-example-2"><div class="figcaption">readme-example-2</div>
+<img src="reference/figures/readme-example-2.png" alt="interactive react flow rendering of the TIGER states GDALG pipeline"><div class="figcaption">interactive react flow rendering of the TIGER states GDALG pipeline</div>
 </div>
-<!-- CHECKPOINT id="ckpt_mrh2jchk_95i970" time="2026-07-12T00:42:00.056Z" note="auto" fixes=0 questions=0 highlights=0 sections="" -->
+<p>Pasted shell scripts (bash or PowerShell) parse as-is, and everything round-trips back out:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/render_command_line.html">render_command_line</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>             <span class="co"># canonical single-line command</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="reference/render_script.html">render_script</a></span><span class="op">(</span><span class="va">p</span>, shell <span class="op">=</span> <span class="st">"bash"</span><span class="op">)</span><span class="op">)</span>  <span class="co"># formatted multi-line script</span></span>
+<span><span class="fu"><a href="reference/write_gdalg.html">write_gdalg</a></span><span class="op">(</span><span class="va">p</span>, <span class="st">"parcels.gdalg.json"</span><span class="op">)</span>   <span class="co"># GDALG specification</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
+</h2>
+<ul>
+<li>
+<a href="https://docs.jimbrig.com/gdalviz/articles/gdalviz.html" class="external-link">Getting started vignette</a> - parse, validate, graph, render, round-trip</li>
+<li>
+<a href="https://docs.jimbrig.com/gdalviz/articles/pipeline-gallery.html" class="external-link">Pipeline gallery</a> - live interactive diagrams of real-world pipelines (tee branching, config-heavy runs, merged schema chains)</li>
+<li><a href="https://docs.jimbrig.com/gdalviz/reference/index.html" class="external-link">Function reference</a></li>
+<li><a href="https://docs.jimbrig.com/gdalviz/news/index.html" class="external-link">Changelog</a></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="development">Development<a class="anchor" aria-label="anchor" href="#development"></a>
+</h2>
+<p>The interactive widget’s TypeScript/React source lives in <a href="srcjs/README.html"><code>srcjs/</code></a> (React Flow + dagre, built with Vite/Bun); the compiled bundle is committed to <code>inst/htmlwidgets/</code> so package users never need a node toolchain. Common tasks are wrapped in the <code>Makefile</code> (<code>make docs</code>, <code>make js</code>, <code>make test</code>, <code>make check</code>, <code>make site</code>), and <code>AGENTS.md</code> documents the architecture and conventions.</p>
+</div>
+<div class="section level2">
+<h2 id="related-work">Related work<a class="anchor" aria-label="anchor" href="#related-work"></a>
+</h2>
+<ul>
+<li>
+<a href="https://gdal.org/en/stable/programs/gdal_vector_pipeline.html" class="external-link">GDAL CLI &amp; pipelines</a> - the <code>gdal vector pipeline</code> algorithm and GDALG format this package visualizes</li>
+<li>
+<a href="https://usdaforestservice.github.io/gdalraster/" class="external-link">gdalraster</a> - R bindings to the GDAL API, including the <code>GDALAlg</code> algorithm interface</li>
+<li>
+<a href="https://github.com/tgerke/dplyneage" class="external-link">dplyneage</a> - React Flow lineage diagrams for dplyr/dbplyr pipelines (kindred spirit for tabular pipelines)</li>
+</ul>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -157,6 +194,7 @@
 <li><a href="https://github.com/jimbrig/gdalviz/actions/workflows/check.yml" class="external-link"><img src="https://github.com/jimbrig/gdalviz/actions/workflows/check.yml/badge.svg" alt="R CMD CHECK"></a></li>
 <li><a href="https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml" class="external-link"><img src="https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml/badge.svg" alt="pkgdown"></a></li>
 <li><a href="https://github.com/jimbrig/gdalviz/actions/workflows/changelog.yml" class="external-link"><img src="https://github.com/jimbrig/gdalviz/actions/workflows/changelog.yml/badge.svg" alt="Automate Changelog"></a></li>
+<li><a href="https://jimbrig.r-universe.dev/gdalviz" class="external-link"><img src="https://jimbrig.r-universe.dev/badges/gdalviz" alt="r-universe"></a></li>
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
 </ul>
 </div>

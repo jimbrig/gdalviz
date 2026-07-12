@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   gdalviz: gdalviz.html
   articles/pipeline-gallery: pipeline-gallery.html
-last_built: 2026-07-12T02:04Z
+last_built: 2026-07-12T02:19Z
 urls:
   reference: http://docs.jimbrig.com/gdalviz/reference
   article: http://docs.jimbrig.com/gdalviz/articles
