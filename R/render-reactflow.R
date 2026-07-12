@@ -146,6 +146,7 @@ reactflow_nodes <- function(nodes) {
       branch_role = n$branch_role,
       depth = n$depth,
       implicit = isTRUE(n$implicit),
+      count = n$count,
       args = n$args[[1]]
     )
   })

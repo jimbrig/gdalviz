@@ -4,6 +4,10 @@
 export const VALUE_CHARS_PER_LINE = 22;
 export const VALUE_MAX_LINES = 3;
 
+// long argument lists (merged step runs, repeated --input/--open-option args)
+// are clamped on the card; the inspector always shows the full list
+export const CARD_MAX_ROWS = 6;
+
 // shorten noisy /vsi.../ chains to a readable tail
 export function prettyValue(v: string): string {
   if (v.includes("/vsi")) {

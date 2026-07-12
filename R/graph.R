@@ -8,10 +8,13 @@
 #' @param x A `gdalviz_pipeline` (from [parse_pipeline()]) or a string/path
 #'   accepted by [read_gdalg()].
 #' @param contract A `gdalviz_contract`.
+#' @param merge_repeated Merge runs of 3+ consecutive identical commands (e.g.
+#'   the one-field-at-a-time `set-field-type` chains needed for schema
+#'   overrides) into a single stacked node. Defaults to `TRUE`.
 #'
 #' @return A `gdalviz_graph`: a list with `nodes` and `edges` tibbles.
 #' @export
-pipeline_graph <- function(x, contract = gdalviz_contract()) {
+pipeline_graph <- function(x, contract = gdalviz_contract(), merge_repeated = TRUE) {
   if (is.character(x)) {
     x <- read_gdalg(x, contract = contract)
   }
@@ -24,6 +27,7 @@ pipeline_graph <- function(x, contract = gdalviz_contract()) {
   ctx$nodes <- list()
   ctx$edges <- list()
   ctx$contract <- contract
+  ctx$merge <- isTRUE(merge_repeated)
 
   # dedicated runtime-configuration node (--config / --progress / ...)
   config_id <- NULL
@@ -70,13 +74,52 @@ empty_state <- function() {
 
 # walk a linear chain of steps, returning the id of the last main node
 walk_chain <- function(ctx, steps, prev_id, state, depth, branch_role) {
+  if (isTRUE(ctx$merge)) {
+    steps <- merge_repeated_steps(steps)
+  }
   last_id <- prev_id
   for (step in steps) {
-    res <- add_step_node(ctx, step, prev_id = last_id, state = state, depth = depth, branch_role = branch_role)
+    res <- if (inherits(step, "gdalviz_merged_step")) {
+      add_merged_node(ctx, step, prev_id = last_id, state = state, depth = depth, branch_role = branch_role)
+    } else {
+      add_step_node(ctx, step, prev_id = last_id, state = state, depth = depth, branch_role = branch_role)
+    }
     state <- res$state
     last_id <- res$id
   }
   last_id
+}
+
+# collapse runs of 3+ consecutive identical commands into one merged step;
+# steps with nested branches (tee etc.) are never merged
+merge_repeated_steps <- function(steps, threshold = 3L) {
+  out <- list()
+  i <- 1L
+  n <- length(steps)
+  while (i <= n) {
+    command <- steps[[i]]$command
+    j <- i
+    while (j < n && identical(steps[[j + 1L]]$command, command)) {
+      j <- j + 1L
+    }
+    run <- steps[i:j]
+    mergeable <- (j - i + 1L) >= threshold &&
+      !any(vapply(run, step_has_nested, logical(1)))
+    if (mergeable) {
+      out[[length(out) + 1L]] <- structure(
+        list(command = command, steps = run),
+        class = "gdalviz_merged_step"
+      )
+    } else {
+      out <- c(out, run)
+    }
+    i <- j + 1L
+  }
+  out
+}
+
+step_has_nested <- function(step) {
+  any(vapply(step$args, function(a) !is.null(a$nested), logical(1)))
 }
 
 add_step_node <- function(ctx, step, prev_id, state, depth, branch_role) {
@@ -108,7 +151,8 @@ add_step_node <- function(ctx, step, prev_id, state, depth, branch_role) {
     ordering = state$ordering,
     branch_role = branch_role,
     depth = depth,
-    implicit = FALSE
+    implicit = FALSE,
+    count = 1L
   )
   ctx$nodes[[length(ctx$nodes) + 1L]] <- node
 
@@ -141,6 +185,81 @@ add_step_node <- function(ctx, step, prev_id, state, depth, branch_role) {
   }
 
   list(id = id, state = state)
+}
+
+# one node representing a run of identical consecutive steps
+add_merged_node <- function(ctx, merged, prev_id, state, depth, branch_role) {
+  command <- merged$command
+  category <- gdalviz_category(command)
+  before <- state
+  for (step in merged$steps) {
+    state <- apply_transition(command, step, state)
+  }
+
+  ctx$id <- ctx$id + 1L
+  id <- paste0("n", ctx$id)
+  defn <- contract_step(command, ctx$contract)
+  n <- length(merged$steps)
+
+  code <- paste(
+    vapply(
+      merged$steps,
+      function(s) paste(c(command, render_step_code(s)), collapse = " "),
+      character(1)
+    ),
+    collapse = " ! "
+  )
+
+  description <- if (identical(command, "set-field-type")) {
+    paste0("Coerce types for ", n, " fields (one step per field)")
+  } else {
+    paste0(n, " consecutive '", command, "' steps")
+  }
+
+  ctx$nodes[[length(ctx$nodes) + 1L]] <- list(
+    id = id,
+    command = command,
+    category = category,
+    category_label = gdalviz_category_label(category),
+    verb = paste0("! ", command, " \u00d7", n),
+    code = code,
+    args = merged_args_payload(merged),
+    description = description,
+    icon = gdalviz_category_icon(category),
+    color = gdalviz_palette()[[category]],
+    docs_url = defn$url %||% NA_character_,
+    crs = state$crs,
+    geom = state$geom,
+    fields = state$fields,
+    validity = state$validity,
+    ordering = state$ordering,
+    branch_role = branch_role,
+    depth = depth,
+    implicit = FALSE,
+    count = n
+  )
+
+  if (!is.null(prev_id)) {
+    add_edge(ctx, prev_id, id, kind = "main", badge = state_badge(before, state))
+  }
+
+  list(id = id, state = state)
+}
+
+# one display row per merged sub-step: a step with exactly two valued flags
+# (e.g. set-field-type --field-name X --field-type Y) reads as name -> value
+merged_args_payload <- function(merged) {
+  lapply(merged$steps, function(s) {
+    vals <- Filter(
+      function(a) identical(a$kind, "flag") && !is.null(a$value) && is.null(a$nested),
+      s$args
+    )
+    if (length(vals) == 2) {
+      list(name = vals[[1]]$value, value = vals[[2]]$value, kind = "flag")
+    } else {
+      list(name = NULL, value = render_step_code(s), kind = "positional")
+    }
+  })
 }
 
 add_config_node <- function(ctx, pipeline_options) {
@@ -177,7 +296,8 @@ add_config_node <- function(ctx, pipeline_options) {
     ordering = NA_character_,
     branch_role = "config",
     depth = 0L,
-    implicit = FALSE
+    implicit = FALSE,
+    count = 1L
   )
   id
 }
@@ -216,7 +336,8 @@ add_implicit_write_node <- function(ctx, prev_id) {
     ordering = NA_character_,
     branch_role = "main",
     depth = 0L,
-    implicit = TRUE
+    implicit = TRUE,
+    count = 1L
   )
   add_edge(ctx, prev_id, id, kind = "main", badge = NA_character_)
   invisible(id)
@@ -557,7 +678,8 @@ nodes_to_tibble <- function(nodes) {
       ordering = character(0),
       branch_role = character(0),
       depth = integer(0),
-      implicit = logical(0)
+      implicit = logical(0),
+      count = integer(0)
     ))
   }
   tibble::tibble(
@@ -579,7 +701,8 @@ nodes_to_tibble <- function(nodes) {
     ordering = vapply(nodes, function(n) n$ordering %||% NA_character_, character(1)),
     branch_role = vapply(nodes, `[[`, character(1), "branch_role"),
     depth = vapply(nodes, `[[`, integer(1), "depth"),
-    implicit = vapply(nodes, function(n) isTRUE(n$implicit), logical(1))
+    implicit = vapply(nodes, function(n) isTRUE(n$implicit), logical(1)),
+    count = vapply(nodes, function(n) n$count %||% 1L, integer(1))
   )
 }
 

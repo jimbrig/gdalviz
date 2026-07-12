@@ -25,6 +25,7 @@ export interface GraphNode {
   branch_role: "main" | "tee" | "input" | "config";
   depth: number;
   implicit: boolean;
+  count: number;
   args: StepArg[];
 }
 
