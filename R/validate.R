@@ -42,6 +42,32 @@ lint_pipeline <- function(x, contract = gdalviz_contract()) {
       )
     }
 
+    # mutually exclusive argument groups (from the contract's
+    # mutual_exclusion_group metadata)
+    groups <- list()
+    for (canonical in provided) {
+      spec <- defn$args[[canonical]]
+      if (is.null(spec) || is.na(spec$mutex_group %||% NA_character_)) {
+        next
+      }
+      groups[[spec$mutex_group]] <- c(groups[[spec$mutex_group]], canonical)
+    }
+    for (group in names(groups)) {
+      members <- unique(groups[[group]])
+      if (length(members) > 1) {
+        issues[[length(issues) + 1L]] <- new_issue(
+          step_index = i,
+          command = command,
+          level = "error",
+          code = "mutually_exclusive_args",
+          message = paste0(
+            "Arguments --", paste(sort(members), collapse = ", --"),
+            " are mutually exclusive (group '", group, "')."
+          )
+        )
+      }
+    }
+
     for (arg in step$args) {
       if (!identical(arg$kind, "flag") || is.null(arg$flag)) {
         next

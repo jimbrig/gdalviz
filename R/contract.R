@@ -54,14 +54,25 @@ parse_contract_arg <- function(arg) {
     choices = unlist(arg[["choices"]]) %||% character(0),
     description = arg[["description"]] %||% "",
     metavar = arg[["metavar"]] %||% NULL,
-    default = arg[["default"]] %||% NULL
+    default = arg[["default"]] %||% NULL,
+    mutex_group = arg[["mutual_exclusion_group"]] %||% NA_character_
   )
 }
 
-# pipeline-level arguments: the algorithm's own input_arguments plus the
-# common gdal cli arguments (--config/--progress/...) that json-usage omits
+# json-usage splits arguments into input / input_output / output groups;
+# for parsing and linting purposes they are one flat set
+algo_arguments <- function(algo) {
+  c(
+    algo[["input_arguments"]] %||% list(),
+    algo[["input_output_arguments"]] %||% list(),
+    algo[["output_arguments"]] %||% list()
+  )
+}
+
+# pipeline-level arguments: the algorithm's own arguments plus the common
+# gdal cli arguments (--config/--progress/...) that json-usage omits
 parse_pipeline_args <- function(raw) {
-  args <- lapply(raw[["input_arguments"]] %||% list(), parse_contract_arg)
+  args <- lapply(algo_arguments(raw), parse_contract_arg)
   names(args) <- vapply(args, function(x) x$name, character(1))
 
   common <- list(
@@ -93,7 +104,7 @@ parse_pipeline_args <- function(raw) {
 }
 
 parse_contract_step <- function(algo) {
-  args <- lapply(algo[["input_arguments"]], parse_contract_arg)
+  args <- lapply(algo_arguments(algo), parse_contract_arg)
   names(args) <- vapply(args, function(x) x$name, character(1))
 
   boolean_args <- names(args)[vapply(args, function(x) identical(x$type, "boolean"), logical(1))]
