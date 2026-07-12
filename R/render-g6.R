@@ -59,7 +59,8 @@ render_g6 <- function(
   edges <- lapply(seq_len(nrow(graph$edges)), function(i) {
     e <- graph$edges[i, ]
     target <- graph$nodes[graph$nodes$id == e$to, ]
-    is_branch <- nrow(target) == 1 && target$branch_role[1] == "tee"
+    is_branch <- identical(e$kind, "config") ||
+      (nrow(target) == 1 && (target$branch_role[1] == "tee" || isTRUE(target$implicit[1])))
     style <- list(
       endArrow = TRUE,
       stroke = if (is_branch) "#94a3b8" else (if (theme == "dark") "#475569" else "#cbd5e1"),

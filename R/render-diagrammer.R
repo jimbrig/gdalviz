@@ -110,7 +110,8 @@ dot_node <- function(node, theme) {
 
 dot_edge <- function(edge, nodes, theme) {
   target <- nodes[nodes$id == edge$to, ]
-  is_branch <- nrow(target) == 1 && target$branch_role[1] == "tee"
+  is_branch <- identical(edge$kind, "config") ||
+    (nrow(target) == 1 && (target$branch_role[1] == "tee" || isTRUE(target$implicit[1])))
   style <- if (is_branch) " style=dashed" else ""
   label <- if (!is.na(edge$badge)) sprintf(" label=\" %s \"", edge$badge) else ""
   color <- if (is_branch) {
@@ -125,6 +126,7 @@ truncate_code <- function(x, n) {
   if (is.na(x) || !nzchar(x)) {
     return("")
   }
+  x <- gsub("\\s+", " ", x)
   if (nchar(x) <= n) {
     return(x)
   }
