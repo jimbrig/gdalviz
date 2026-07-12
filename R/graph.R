@@ -207,7 +207,7 @@ add_merged_node <- function(ctx, merged, prev_id, state, depth, branch_role) {
       function(s) paste(c(command, render_step_code(s)), collapse = " "),
       character(1)
     ),
-    collapse = " ! "
+    collapse = "\n! "
   )
 
   description <- if (identical(command, "set-field-type")) {

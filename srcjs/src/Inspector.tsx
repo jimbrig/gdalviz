@@ -28,8 +28,10 @@ export function Inspector({ node, onClose }: { node: GraphNode; onClose: () => v
 
       {node.code && (
         <>
-          <div className="gv-inspector-section">step</div>
-          <pre className="gv-inspector-code">{`${node.command} ${node.code}`.trim()}</pre>
+          <div className="gv-inspector-section">{node.count > 1 ? "steps" : "step"}</div>
+          <pre className="gv-inspector-code">
+            {node.code.startsWith(node.command) ? node.code : `${node.command} ${node.code}`.trim()}
+          </pre>
         </>
       )}
 
