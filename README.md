@@ -2,6 +2,7 @@
 # gdalviz
 
 <!-- badges: start -->
+[![pkgdown](https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml/badge.svg)](https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml)
 <!-- badges: end -->
 
 `gdalviz` provides a modern framework for parsing, validating, and visualizing GDAL pipeline algorithms (for example `gdal vector pipeline ! ...` and GDALG `command_line` definitions).
