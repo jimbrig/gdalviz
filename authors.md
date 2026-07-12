@@ -7,13 +7,16 @@
 
 ## Citation
 
+Source:
+[`DESCRIPTION`](https://github.com/jimbrig/gdalviz/blob/main/DESCRIPTION)
+
 Briggs J (2026). *gdalviz: Visualize Modern GDAL Pipelines*. R package
-version 0.0.0.9000, <http://docs.jimbrig.com/gdalviz/>.
+version 0.1.0, <http://docs.jimbrig.com/gdalviz/>.
 
     @Manual{,
       title = {gdalviz: Visualize Modern GDAL Pipelines},
       author = {Jimmy Briggs},
       year = {2026},
-      note = {R package version 0.0.0.9000},
+      note = {R package version 0.1.0},
       url = {http://docs.jimbrig.com/gdalviz/},
     }
