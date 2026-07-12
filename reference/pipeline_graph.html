@@ -46,7 +46,7 @@ plain-language description, and propagating the feature-stream state
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pipeline_graph</span><span class="op">(</span><span class="va">x</span>, contract <span class="op">=</span> <span class="fu"><a href="gdalviz_contract.html">gdalviz_contract</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pipeline_graph</span><span class="op">(</span><span class="va">x</span>, contract <span class="op">=</span> <span class="fu"><a href="gdalviz_contract.html">gdalviz_contract</a></span><span class="op">(</span><span class="op">)</span>, merge_repeated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -60,6 +60,12 @@ accepted by <code><a href="read_gdalg.html">read_gdalg()</a></code>.</p></dd>
 
 <dt id="arg-contract">contract<a class="anchor" aria-label="anchor" href="#arg-contract"></a></dt>
 <dd><p>A <code>gdalviz_contract</code>.</p></dd>
+
+
+<dt id="arg-merge-repeated">merge_repeated<a class="anchor" aria-label="anchor" href="#arg-merge-repeated"></a></dt>
+<dd><p>Merge runs of 3+ consecutive identical commands (e.g.
+the one-field-at-a-time <code>set-field-type</code> chains needed for schema
+overrides) into a single stacked node. Defaults to <code>TRUE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

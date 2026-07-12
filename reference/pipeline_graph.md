@@ -10,7 +10,7 @@ validity, ordering) along the pipeline.
 ## Usage
 
 ``` r
-pipeline_graph(x, contract = gdalviz_contract())
+pipeline_graph(x, contract = gdalviz_contract(), merge_repeated = TRUE)
 ```
 
 ## Arguments
@@ -25,6 +25,12 @@ pipeline_graph(x, contract = gdalviz_contract())
 - contract:
 
   A `gdalviz_contract`.
+
+- merge_repeated:
+
+  Merge runs of 3+ consecutive identical commands (e.g. the
+  one-field-at-a-time `set-field-type` chains needed for schema
+  overrides) into a single stacked node. Defaults to `TRUE`.
 
 ## Value
 
