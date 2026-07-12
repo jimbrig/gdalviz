@@ -1,0 +1,150 @@
+---
+title: "Getting started with gdalviz"
+format:
+  html:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Getting started with gdalviz}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: "#>"
+---
+
+```{r}
+#| label: setup
+#| message: false
+library(gdalviz)
+```
+
+Modern GDAL (>= 3.11) ships a composable CLI where vector operations chain
+into *pipelines*:
+
+```sh
+gdal vector pipeline ! read ... ! filter ... ! reproject ... ! write ...
+```
+
+Pipelines can be saved as `.gdalg.json` files (the command line without the
+final `write` step) and reused as streamed datasets. gdalviz parses these
+pipelines, validates them against GDAL's own algorithm contract, and renders
+them as static or interactive dataflow diagrams for people who think in maps,
+not command lines.
+
+## Parsing pipelines
+
+`parse_pipeline()` accepts a raw command line, with or without the
+`gdal vector pipeline` prefix:
+
+```{r}
+#| label: parse
+cmd <- paste(
+  "gdal vector pipeline",
+  "--config GDAL_NUM_THREADS=ALL_CPUS",
+  "! read --input parcels.gpkg --input-layer parcels",
+  "! filter --where \"statefp = '13'\"",
+  "! make-valid",
+  "! reproject --output-crs EPSG:4326",
+  "! write --output parcels.fgb --output-format FlatGeobuf"
+)
+
+p <- parse_pipeline(cmd)
+p
+```
+
+`read_gdalg()` additionally accepts paths to `.gdalg.json` files, raw pipeline
+text files, and pasted multiline bash / PowerShell scripts -- line
+continuations, heredocs, and PowerShell `\"` quoting are normalized
+automatically:
+
+```{r}
+#| label: read-script
+script <- "gdal vector pipeline `
+  read --input parcels.gpkg `
+! reproject --output-crs 'EPSG:4326' `
+! write --output out.fgb"
+
+read_gdalg(script)
+```
+
+## Validating against the GDAL contract
+
+The single source of truth for valid steps and arguments is GDAL's own
+`--json-usage` output. A snapshot is bundled with the package, and
+`gdalviz_refresh_contract()` regenerates it from your locally installed GDAL.
+
+`lint_pipeline()` returns one row per issue; `validate_pipeline()` wraps the
+result into a pass/fail object:
+
+```{r}
+#| label: lint
+bad <- "read --input in.gpkg ! reproject ! write --output out.fgb --append --upsert"
+lint_pipeline(bad)
+```
+
+Unknown steps and arguments, missing required arguments, invalid enum choices,
+and mutually exclusive combinations (like `--append` + `--upsert` above) are
+all reported.
+
+## The pipeline graph
+
+`pipeline_graph()` turns a pipeline into a renderer-agnostic dataflow model:
+nodes carry a semantic category (source, filter, geometry, ...), a
+plain-language description, and the propagated feature-stream state (CRS,
+geometry type, field schema); edges carry "what changed" badges.
+
+```{r}
+#| label: graph
+g <- pipeline_graph(cmd)
+g$nodes[, c("command", "category", "description")]
+```
+
+A few GDAL nuances get dedicated treatment:
+
+- pipeline-level options (`--config`, `--progress`) group into a single
+  *runtime configuration* node feeding the source,
+- GDALG pipelines omit their terminal `write`; the graph adds an implicit
+  *streamed output* sink so the flow reads complete,
+- runs of 3+ consecutive identical steps (for example the one-field-at-a-time
+  `set-field-type` chains needed for schema overrides) merge into one stacked
+  node. Opt out with `merge_repeated = FALSE`.
+
+## Interactive rendering
+
+`render_reactflow()` produces the interactive [React
+Flow](https://reactflow.dev) widget bundled with the package (no node
+toolchain required). Drag to pan, scroll to zoom, and **click any node** to
+open an inspector with the step's arguments, the propagated stream state, and
+a link to its GDAL documentation.
+
+```{r}
+#| label: render
+render_reactflow(g, theme = "light", height = 460)
+```
+
+Layout direction (`"TB"`, `"LR"`, ...), light/dark themes, and the
+minimap/controls/legend overlays are all arguments. For static output use
+`render_diagrammer()` (Graphviz), or `render_g6()` for an AntV G6 alternative.
+See the [pipeline gallery](https://docs.jimbrig.com/gdalviz/articles/pipeline-gallery.html)
+article for larger real-world examples (tee branching, config-heavy runs,
+merged schema chains).
+
+## Round-tripping and scripts
+
+Parsed pipelines serialize back out losslessly:
+
+```{r}
+#| label: render-out
+render_command_line(p)
+```
+
+and can be formatted as ready-to-run shell scripts for either bash or
+PowerShell, optionally reflowing SQL into heredocs:
+
+```{r}
+#| label: render-script
+cat(render_script(p, shell = "bash"))
+```
+
+`as_gdalg()` / `write_gdalg()` produce GDALG JSON specifications directly.

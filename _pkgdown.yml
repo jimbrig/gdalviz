@@ -2,3 +2,49 @@ url: http://docs.jimbrig.com/gdalviz/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - articles/pipeline-gallery
+
+reference:
+- title: Read and parse
+  desc: Turn command lines, GDALG files, and shell scripts into pipelines.
+  contents:
+  - parse_pipeline
+  - read_gdalg
+  - parse_script
+  - read_script
+- title: Validate
+  desc: Check pipelines against the GDAL --json-usage contract.
+  contents:
+  - lint_pipeline
+  - validate_pipeline
+  - gdalviz_contract
+  - gdalviz_refresh_contract
+  - contract_step
+- title: Graph model
+  contents:
+  - pipeline_graph
+- title: Render
+  desc: Interactive and static visualizations.
+  contents:
+  - render_reactflow
+  - pipelineFlowOutput
+  - renderPipelineFlow
+  - render_diagrammer
+  - pipeline_dot
+  - render_g6
+- title: Serialize
+  desc: Back out to command lines, scripts, and GDALG.
+  contents:
+  - render_command_line
+  - render_script
+  - as_gdalg
+  - write_gdalg
+
