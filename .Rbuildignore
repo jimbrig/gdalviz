@@ -34,3 +34,6 @@
 ^LICENSE\.md$
 ^cran-comments\.md$
 ^srcjs$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
