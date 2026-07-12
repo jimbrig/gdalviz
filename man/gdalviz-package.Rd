@@ -6,12 +6,16 @@
 \alias{gdalviz-package}
 \title{gdalviz: Visualize Modern GDAL Pipelines}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Produces interactive or static visualizations of modern GDAL CLI pipelines.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{http://docs.jimbrig.com/gdalviz/}
+  \item \url{https://github.com/jimbrig/gdalviz}
+  \item Report bugs at \url{https://github.com/jimbrig/gdalviz/issues}
 }
 
 }
