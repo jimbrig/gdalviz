@@ -66,15 +66,22 @@ parse_pipeline_args <- function(raw) {
 
   common <- list(
     config = list(
-      name = "config", type = "string_list", required = FALSE,
+      name = "config",
+      type = "string_list",
+      required = FALSE,
       choices = character(0),
       description = "Configuration option (<KEY>=<VALUE>)",
-      metavar = "<KEY>=<VALUE>", default = NULL
+      metavar = "<KEY>=<VALUE>",
+      default = NULL
     ),
     progress = list(
-      name = "progress", type = "boolean", required = FALSE,
-      choices = character(0), description = "Display progress bar",
-      metavar = NULL, default = NULL
+      name = "progress",
+      type = "boolean",
+      required = FALSE,
+      choices = character(0),
+      description = "Display progress bar",
+      metavar = NULL,
+      default = NULL
     )
   )
   for (nm in names(common)) {

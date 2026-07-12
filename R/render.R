@@ -73,12 +73,14 @@ render_command_line <- function(x, prog = TRUE, type = NULL) {
 #'
 #' @return A length-one character vector containing the full script.
 #' @export
-render_script <- function(x,
-                          shell = c("bash", "powershell"),
-                          indent = "  ",
-                          type = NULL,
-                          globals_per_line = 3L,
-                          sql = c("inline", "block")) {
+render_script <- function(
+  x,
+  shell = c("bash", "powershell"),
+  indent = "  ",
+  type = NULL,
+  globals_per_line = 3L,
+  sql = c("inline", "block")
+) {
   shell <- rlang::arg_match(shell)
   sql <- rlang::arg_match(sql)
   x <- as_pipeline(x)
@@ -417,7 +419,11 @@ collapse_heredocs <- function(text, shell = "bash") {
       inner <- gsub("\\s+", " ", inner, perl = TRUE)
       paste0("\"", gsub("\"", "\\\\\"", trimws(inner)), "\"")
     }
-    gsubfn_like(text, "(?s)\"\\$\\(cat\\s+<<-?['\"]?[A-Za-z_][A-Za-z0-9_]*['\"]?\\s*\\n.*?\\n[A-Za-z_][A-Za-z0-9_]*\\s*\\)\"", repl)
+    gsubfn_like(
+      text,
+      "(?s)\"\\$\\(cat\\s+<<-?['\"]?[A-Za-z_][A-Za-z0-9_]*['\"]?\\s*\\n.*?\\n[A-Za-z_][A-Za-z0-9_]*\\s*\\)\"",
+      repl
+    )
   }
 }
 

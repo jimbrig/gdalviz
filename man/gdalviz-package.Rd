@@ -8,6 +8,13 @@
 \description{
 Produces interactive or static visualizations of modern GDAL CLI pipelines.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{http://docs.jimbrig.com/gdalviz/}
+}
+
+}
 \author{
 \strong{Maintainer}: Jimmy Briggs \email{jimmy.briggs@jimbrig.com} (\href{https://orcid.org/0000-0002-7489-8787}{ORCID})
 
