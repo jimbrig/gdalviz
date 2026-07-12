@@ -32,6 +32,7 @@ pipeline_graph <- function(x, contract = gdalviz_contract()) {
     list(
       nodes = nodes_to_tibble(ctx$nodes),
       edges = edges_to_tibble(ctx$edges),
+      globals = format_globals(x$pipeline_options),
       pipeline_type = x$pipeline_type,
       command_line = x$command_line
     ),
@@ -76,8 +77,10 @@ add_step_node <- function(ctx, step, prev_id, state, depth, branch_role) {
     id = id,
     command = command,
     category = category,
+    category_label = gdalviz_category_label(category),
     verb = paste0("! ", command),
     code = render_step_code(step),
+    args = step_args_payload(step),
     description = describe_step(command, step, state),
     icon = gdalviz_category_icon(category),
     color = gdalviz_palette()[[category]],
@@ -269,6 +272,37 @@ describe_step <- function(command, step, state) {
 
 # --- helpers -----------------------------------------------------------------
 
+# structured argument list for renderers (name/value/kind per argument)
+step_args_payload <- function(step) {
+  lapply(step$args, function(a) {
+    if (!is.null(a$nested)) {
+      list(name = a$flag, value = NULL, kind = "nested")
+    } else if (identical(a$kind, "flag")) {
+      list(name = a$flag, value = a$value, kind = "flag")
+    } else {
+      list(name = NULL, value = a$value, kind = "positional")
+    }
+  })
+}
+
+# render pipeline-level options (--config etc.) as display chips
+format_globals <- function(pipeline_options) {
+  if (length(pipeline_options) == 0) {
+    return(character(0))
+  }
+  vapply(
+    pipeline_options,
+    function(a) {
+      if (identical(a$kind, "flag") && !is.null(a$flag)) {
+        if (is.null(a$value)) paste0("--", a$flag) else a$value
+      } else {
+        a$value %||% ""
+      }
+    },
+    character(1)
+  )
+}
+
 geom_type_label <- function(step) {
   gt <- arg_value(step, "geometry-type")
   if (!is.na(gt)) {
@@ -412,6 +446,8 @@ nodes_to_tibble <- function(nodes) {
       id = character(0),
       command = character(0),
       category = character(0),
+      category_label = character(0),
+      args = list(),
       verb = character(0),
       code = character(0),
       description = character(0),
@@ -431,6 +467,8 @@ nodes_to_tibble <- function(nodes) {
     id = vapply(nodes, `[[`, character(1), "id"),
     command = vapply(nodes, `[[`, character(1), "command"),
     category = vapply(nodes, `[[`, character(1), "category"),
+    category_label = vapply(nodes, `[[`, character(1), "category_label"),
+    args = lapply(nodes, function(n) n$args %||% list()),
     verb = vapply(nodes, `[[`, character(1), "verb"),
     code = vapply(nodes, `[[`, character(1), "code"),
     description = vapply(nodes, `[[`, character(1), "description"),

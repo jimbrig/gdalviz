@@ -44,9 +44,12 @@ gdalviz_category_map <- function() {
 }
 
 gdalviz_category <- function(command) {
+  if (is.null(command) || is.na(command)) {
+    return("other")
+  }
   m <- gdalviz_category_map()
-  cat <- m[[command]]
-  cat %||% "other"
+  cat <- unname(m[command])
+  if (is.na(cat)) "other" else cat
 }
 
 # modern, accessible palette (tailwind-ish), keyed by category.

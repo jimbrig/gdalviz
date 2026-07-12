@@ -33,3 +33,4 @@
 ^CHANGELOG\.md$
 ^LICENSE\.md$
 ^cran-comments\.md$
+^srcjs$

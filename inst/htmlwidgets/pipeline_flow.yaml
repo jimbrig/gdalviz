@@ -1,0 +1,3 @@
+# the pipeline_flow.js bundle is self-contained (react, react flow, dagre,
+# and css are inlined by the srcjs/ vite build), so no extra dependencies.
+dependencies: []

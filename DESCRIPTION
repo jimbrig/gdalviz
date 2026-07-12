@@ -11,6 +11,7 @@ License: MIT + file LICENSE
 Imports: 
     cli,
     crayon,
+    htmlwidgets,
     jsonlite,
     rlang,
     tibble

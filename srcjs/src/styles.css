@@ -1,0 +1,394 @@
+/* gdalviz pipeline_flow widget styles */
+
+.gv-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --gv-bg: #ffffff;
+  --gv-panel: #f8fafc;
+  --gv-panel-border: #e2e8f0;
+  --gv-node-bg: #ffffff;
+  --gv-node-border: #e2e8f0;
+  --gv-text: #0f172a;
+  --gv-text-muted: #64748b;
+  --gv-text-faint: #94a3b8;
+  --gv-code-bg: #f1f5f9;
+  --gv-edge: #94a3b8;
+  --gv-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  --gv-mono: "JetBrains Mono", "Cascadia Code", "IBM Plex Mono", Consolas, monospace;
+}
+
+.gv-root.gv-theme-dark {
+  --gv-bg: #0b0e12;
+  --gv-panel: #11151b;
+  --gv-panel-border: #232a33;
+  --gv-node-bg: #161a20;
+  --gv-node-border: #2a313b;
+  --gv-text: #e2e8f0;
+  --gv-text-muted: #8b94a0;
+  --gv-text-faint: #5d6570;
+  --gv-code-bg: #0d1015;
+  --gv-edge: #475569;
+  --gv-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+.gv-root .react-flow {
+  background: var(--gv-bg);
+}
+
+/* nodes ------------------------------------------------------------------ */
+
+.gv-node {
+  width: 264px;
+  background: var(--gv-node-bg);
+  border: 1px solid var(--gv-node-border);
+  border-radius: 10px;
+  box-shadow: var(--gv-shadow);
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.gv-node:hover {
+  border-color: var(--gv-accent);
+}
+
+.gv-node.gv-selected {
+  border-color: var(--gv-accent);
+  box-shadow: 0 0 0 1px var(--gv-accent), var(--gv-shadow);
+}
+
+.gv-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  background: var(--gv-accent);
+}
+
+.gv-node-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gv-glyph {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gv-command {
+  font-family: var(--gv-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gv-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+
+.gv-node-body {
+  padding: 8px 12px 10px;
+}
+
+.gv-desc {
+  font-size: 11.5px;
+  color: var(--gv-text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.gv-arg-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 5px;
+  line-height: 1.35;
+}
+
+.gv-arg-row:last-child {
+  margin-bottom: 0;
+}
+
+.gv-arg-key {
+  font-family: var(--gv-mono);
+  font-size: 10.5px;
+  color: var(--gv-text-faint);
+  min-width: 82px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gv-val {
+  font-family: var(--gv-mono);
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--gv-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gv-val-path { color: #3b82f6; }
+.gv-val-sql { color: #a855f7; }
+.gv-val-enum { color: #d97706; }
+.gv-val-opt { color: #16a34a; }
+
+.gv-theme-dark .gv-val-path { color: #6ab0ff; }
+.gv-theme-dark .gv-val-sql { color: #c98ad9; }
+.gv-theme-dark .gv-val-enum { color: #e0b057; }
+.gv-theme-dark .gv-val-opt { color: #6fc28a; }
+
+.gv-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.gv-flag {
+  font-family: var(--gv-mono);
+  font-size: 10px;
+  color: var(--gv-accent);
+  border: 1px solid color-mix(in srgb, var(--gv-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--gv-accent) 10%, transparent);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.gv-handle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* edges ------------------------------------------------------------------ */
+
+.gv-root .react-flow__edge-path {
+  stroke: var(--gv-edge);
+  stroke-width: 1.6;
+}
+
+.gv-root .gv-edge-branch .react-flow__edge-path {
+  stroke: var(--gv-text-faint);
+  stroke-width: 1.3;
+}
+
+.gv-root .react-flow__edge-text {
+  font-family: var(--gv-mono);
+  font-size: 9.5px;
+  fill: var(--gv-text-muted);
+}
+
+.gv-root .react-flow__edge-textbg {
+  fill: var(--gv-bg);
+}
+
+/* overlays ----------------------------------------------------------------- */
+
+.gv-legend {
+  position: absolute;
+  left: 56px;
+  bottom: 12px;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 68px);
+  background: color-mix(in srgb, var(--gv-panel) 88%, transparent);
+  border: 1px solid var(--gv-panel-border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  backdrop-filter: blur(4px);
+}
+
+.gv-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gv-text-muted);
+}
+
+.gv-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.gv-globals {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: min(420px, 60%);
+}
+
+.gv-global-chip {
+  font-family: var(--gv-mono);
+  font-size: 10px;
+  background: var(--gv-panel);
+  border: 1px solid var(--gv-panel-border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  color: var(--gv-text-muted);
+}
+
+.gv-global-gear {
+  color: #d9a441;
+}
+
+/* inspector ---------------------------------------------------------------- */
+
+.gv-inspector {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 82%;
+  z-index: 10;
+  background: var(--gv-panel);
+  border-left: 1px solid var(--gv-panel-border);
+  overflow-y: auto;
+  padding: 16px 18px;
+  color: var(--gv-text);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+}
+
+.gv-inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.gv-inspector-title {
+  font-family: var(--gv-mono);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.gv-btn-close {
+  background: transparent;
+  border: 1px solid var(--gv-panel-border);
+  color: var(--gv-text-muted);
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.gv-btn-close:hover {
+  color: var(--gv-text);
+}
+
+.gv-inspector-desc {
+  font-size: 12px;
+  color: var(--gv-text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.gv-inspector-section {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gv-text-faint);
+  margin: 14px 0 6px;
+}
+
+.gv-inspector-code {
+  font-family: var(--gv-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  background: var(--gv-code-bg);
+  border: 1px solid var(--gv-panel-border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  color: var(--gv-text);
+}
+
+.gv-inspector-args {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gv-inspector-args td {
+  padding: 4px 6px 4px 0;
+  vertical-align: top;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.gv-inspector-args .gv-arg-key {
+  min-width: 0;
+  width: 42%;
+}
+
+.gv-inspector-args .gv-arg-value {
+  font-family: var(--gv-mono);
+  color: var(--gv-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.gv-docs-link {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.gv-docs-link:hover {
+  text-decoration: underline;
+}
+
+.gv-theme-dark .gv-docs-link {
+  color: #6ab0ff;
+}
+
+/* react flow chrome tweaks --------------------------------------------------*/
+
+.gv-root .react-flow__controls {
+  box-shadow: var(--gv-shadow);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gv-root .react-flow__minimap {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--gv-shadow);
+}
