@@ -1,23 +1,26 @@
 Package: gdalviz
-Title: Visualize Modern GDAL Pipelines 
+Title: Visualize Modern GDAL Pipelines
 Version: 0.0.0.9000
 Authors@R: 
     person("Jimmy", "Briggs", , "jimmy.briggs@jimbrig.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7489-8787"))
 Author: Jimmy Briggs [aut, cre]
 Maintainer: Jimmy Briggs <jimmy.briggs@jimbrig.com>
-Description: Produces interactive or static visualizations of modern GDAL CLI pipelines.
+Description: Produces interactive or static visualizations of modern GDAL
+    CLI pipelines.
 License: MIT + file LICENSE
 Imports: 
     cli,
     crayon,
-    htmlwidgets,
-    jsonlite,
-    rlang,
-    tibble
-Suggests: 
     DiagrammeR,
     g6R,
+    htmlwidgets,
+    jsonlite,
+    processx,
+    rlang,
+    tibble,
+    utils
+Suggests: 
     spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

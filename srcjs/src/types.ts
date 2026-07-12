@@ -22,15 +22,16 @@ export interface GraphNode {
   fields: string | null;
   validity: string | null;
   ordering: string | null;
-  branch_role: "main" | "tee" | "input";
+  branch_role: "main" | "tee" | "input" | "config";
   depth: number;
+  implicit: boolean;
   args: StepArg[];
 }
 
 export interface GraphEdge {
   from: string;
   to: string;
-  kind: "main" | "merge";
+  kind: "main" | "merge" | "config";
   badge: string | null;
 }
 
@@ -46,7 +47,6 @@ export interface WidgetOptions {
 export interface Payload {
   nodes: GraphNode[];
   edges: GraphEdge[];
-  globals: string[];
   meta: {
     command_line: string | null;
     pipeline_type: string | null;

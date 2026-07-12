@@ -13,6 +13,7 @@ const GLYPHS: Record<string, string> = {
   branch: "\u2442", // ⑂
   inspect: "\u2315", // ⌕
   geometry: "\u25C7", // ◇
+  runtime: "\u2699", // ⚙
   other: "\u22EF", // ⋯
 };
 
@@ -35,7 +36,7 @@ function PipelineNodeInner({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`gv-node gv-cat-${node.category}${selected ? " gv-selected" : ""}`}
+      className={`gv-node gv-cat-${node.category}${selected ? " gv-selected" : ""}${node.implicit ? " gv-implicit" : ""}`}
       style={{ ["--gv-accent" as string]: node.color }}
     >
       <Handle type="target" position={horizontal ? Position.Left : Position.Top} className="gv-handle" />

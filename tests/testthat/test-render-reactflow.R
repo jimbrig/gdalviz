@@ -29,7 +29,7 @@ test_that("widget payload carries nodes, edges, globals, and options", {
   commands <- vapply(x$nodes, `[[`, character(1), "command")
   expect_setequal(
     commands,
-    c("read", "filter", "tee", "sql", "write", "reproject", "write")
+    c("config", "read", "filter", "tee", "sql", "write", "reproject", "write")
   )
 
   read_node <- x$nodes[[which(commands == "read")[1]]]
@@ -38,8 +38,12 @@ test_that("widget payload carries nodes, edges, globals, and options", {
   arg_names <- vapply(read_node$args, function(a) a$name %||% "", character(1))
   expect_true(all(c("input", "input-layer") %in% arg_names))
 
+  config_node <- x$nodes[[which(commands == "config")[1]]]
+  expect_identical(config_node$category, "runtime")
+  expect_identical(config_node$args[[1]]$value, "GDAL_NUM_THREADS=ALL_CPUS")
+
   expect_true(any(vapply(x$edges, function(e) identical(e$kind, "main"), logical(1))))
-  expect_identical(x$globals[[1]], "GDAL_NUM_THREADS=ALL_CPUS")
+  expect_true(any(vapply(x$edges, function(e) identical(e$kind, "config"), logical(1))))
 
   expect_identical(x$options$direction, "LR")
   expect_identical(x$options$theme, "dark")

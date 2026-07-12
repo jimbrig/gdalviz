@@ -73,7 +73,8 @@ export function layoutGraph(
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const rfEdges: Edge[] = edges.map((e, i) => {
     const target = byId.get(e.to);
-    const isBranch = e.kind === "merge" || target?.branch_role === "tee";
+    const isBranch =
+      e.kind === "merge" || e.kind === "config" || target?.branch_role === "tee" || target?.implicit;
     return {
       id: `e${i}`,
       source: e.from,

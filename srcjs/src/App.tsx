@@ -39,19 +39,6 @@ function Legend({ nodes }: { nodes: GraphNode[] }) {
   );
 }
 
-function Globals({ globals }: { globals: string[] }) {
-  if (!globals.length) return null;
-  return (
-    <div className="gv-globals">
-      {globals.map((g, i) => (
-        <span key={i} className="gv-global-chip">
-          <span className="gv-global-gear">{"\u2699"}</span> {g}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function App({ payload }: { payload: Payload }) {
   const { options } = payload;
   const [selected, setSelected] = useState<string | null>(null);
@@ -97,7 +84,6 @@ export function App({ payload }: { payload: Payload }) {
             />
           )}
         </ReactFlow>
-        <Globals globals={payload.globals} />
         {options.legend && <Legend nodes={payload.nodes} />}
         {selectedNode && <Inspector node={selectedNode} onClose={() => setSelected(null)} />}
       </ReactFlowProvider>
