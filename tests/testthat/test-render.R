@@ -70,6 +70,18 @@ test_that("nested tee branches survive a round-trip", {
   expect_identical(render_command_line(parse_pipeline(cl)), cl)
 })
 
+test_that("globals with an implicit first step round-trip", {
+  cmd2 <- paste(
+    "gdal vector pipeline --progress --config GDAL_NUM_THREADS=ALL_CPUS",
+    "read --input in.gpkg ! write --output out.fgb"
+  )
+  p <- parse_pipeline(cmd2)
+  cl <- render_command_line(p)
+  # the canonical form re-adds the `!` between globals and the first step
+  expect_match(cl, "--config GDAL_NUM_THREADS=ALL_CPUS ! read", fixed = TRUE)
+  expect_identical(render_command_line(parse_pipeline(cl)), cl)
+})
+
 test_that("as_gdalg builds a schema-shaped spec", {
   spec <- as_gdalg(parse_pipeline(cmd))
   expect_identical(spec$type, "gdal_streamed_alg")
