@@ -9,6 +9,10 @@ Useful links:
 
 - <http://docs.jimbrig.com/gdalviz/>
 
+- <https://github.com/jimbrig/gdalviz>
+
+- Report bugs at <https://github.com/jimbrig/gdalviz/issues>
+
 ## Author
 
 **Maintainer**: Jimmy Briggs <jimmy.briggs@jimbrig.com>

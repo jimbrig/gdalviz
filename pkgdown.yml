@@ -1,8 +1,10 @@
 pandoc: 3.8.3
 pkgdown: 2.2.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2026-07-12T01:39Z
+articles:
+  gdalviz: gdalviz.html
+  articles/pipeline-gallery: pipeline-gallery.html
+last_built: 2026-07-12T01:55Z
 urls:
   reference: http://docs.jimbrig.com/gdalviz/reference
   article: http://docs.jimbrig.com/gdalviz/articles

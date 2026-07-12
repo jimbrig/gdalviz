@@ -1,11 +1,14 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>http://docs.jimbrig.com/gdalviz/404.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/AGENTS.html</loc></url>
-<url><loc>http://docs.jimbrig.com/gdalviz/CHANGELOG.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/LICENSE-text.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/LICENSE.html</loc></url>
+<url><loc>http://docs.jimbrig.com/gdalviz/articles/gdalviz.html</loc></url>
+<url><loc>http://docs.jimbrig.com/gdalviz/articles/index.html</loc></url>
+<url><loc>http://docs.jimbrig.com/gdalviz/articles/pipeline-gallery.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/authors.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/index.html</loc></url>
+<url><loc>http://docs.jimbrig.com/gdalviz/news/index.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/reference/as_gdalg.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/reference/contract_step.html</loc></url>
 <url><loc>http://docs.jimbrig.com/gdalviz/reference/gdalviz-package.html</loc></url>

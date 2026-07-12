@@ -1,0 +1,167 @@
+# Pipeline gallery
+
+``` r
+
+library(gdalviz)
+```
+
+Real-world `gdal vector pipeline` examples rendered with
+[`render_reactflow()`](http://docs.jimbrig.com/gdalviz/reference/render_reactflow.md).
+Every diagram is live: drag to pan, scroll to zoom, use the minimap, and
+**click any node** to open the inspector with that step’s full
+arguments, propagated stream state, and GDAL docs link.
+
+## TIGER states: a linear ETL pipeline
+
+A classic download-filter-reshape-write flow, straight from the US
+Census TIGER shapefiles over `/vsizip/vsicurl/`. Note the edge badges
+tracking what changes along the stream: the SQL step reduces the schema
+to 6 fields, and `reproject` stamps the CRS.
+
+``` r
+
+tiger <- paste(
+  "gdal vector pipeline",
+  '! read --input "/vsizip/vsicurl/https://www2.census.gov/geo/tiger/TIGER2025/STATE/tl_2025_us_state.zip/tl_2025_us_state.shp"',
+  '--input-layer tl_2025_us_state --open-option ENCODING=UTF-8 --open-option ADJUST_GEOM_TYPE=FIRST_SHAPE',
+  "! filter --where \"STATEFP NOT IN ('02','15','60','66','69','72','74','78')\"",
+  '! sql --sql "SELECT GEOID AS geoid, STATEFP AS state_fips, STUSPS AS state_abbr,',
+  'NAME AS state_name, ALAND AS area_land_m2, AWATER AS area_water_m2 FROM tl_2025_us_state"',
+  "! make-valid",
+  "! set-geom-type --multi --skip",
+  "! sort --method hilbert",
+  "! write --output tiger_states.parquet --output-format Parquet",
+  '--layer-creation-option COMPRESSION=ZSTD --layer-creation-option GEOMETRY_ENCODING=GEOARROW'
+)
+
+render_reactflow(tiger, theme = "dark", height = 620)
+```
+
+## Tee branching: valid / invalid geometry triage
+
+`tee` fans the feature stream out into side pipelines – here splitting
+parcels by `ST_IsValid()` into separate outputs while the main stream
+continues to a Parquet write. Branch flows render dashed.
+
+``` r
+
+triage <- paste(
+  "gdal vector pipeline",
+  '! read --input parcels.gpkg --layer parcels_statefp13',
+  '! tee',
+  '--tee-pipeline [ sql --sql "SELECT * FROM parcels_statefp13 WHERE ST_IsValid(geom)" --dialect SQLITE',
+  '! write --output valid_parcels.gpkg --overwrite ]',
+  '--tee-pipeline [ sql --sql "SELECT * FROM parcels_statefp13 WHERE NOT ST_IsValid(geom)" --dialect SQLITE',
+  '! check-geometry ! write --output invalid_parcels.gpkg --overwrite ]',
+  '! write --output all_parcels.parquet --output-format Parquet',
+  '--layer-creation-option COMPRESSION=ZSTD'
+)
+
+render_reactflow(triage, direction = "LR", theme = "light", height = 540)
+```
+
+## Config-heavy runs and merged schema chains
+
+A production parcels ETL: eight `--config` options group into the
+*runtime configuration* node, thirty-two one-field-at-a-time
+`set-field-type` steps (a GDAL nuance – the command accepts one field
+per step) merge into a single stacked `set-field-type` ×32 node, and
+because the pipeline writes GDALG, the graph attaches the implicit
+*streamed output* sink. Click the merged node to see every field -\>
+type coercion.
+
+``` r
+
+fields <- c(
+  source_fid = "Integer64", geoid = "String", state_fips = "String",
+  county_fips = "String", tax_year = "Integer", num_buildings = "Integer",
+  num_units = "Integer", year_built = "Integer", num_floors = "Integer",
+  building_sqft = "Integer64", num_bedrooms = "Integer",
+  num_half_baths = "Integer", num_full_baths = "Integer",
+  improvement_value = "Integer64", land_value = "Integer64",
+  ag_value = "Integer64", total_value = "Integer64", tax_acres = "Real",
+  calc_area = "Real", sale_amount = "Real", sale_date = "Date",
+  firm_date = "Date", static_bfe = "Real", elevation_min = "Real",
+  elevation_max = "Real", elevation_avg = "Real", num_fireplaces = "Integer",
+  updated = "Date", centroid_x = "Real", centroid_y = "Real",
+  surface_point_x = "Real", surface_point_y = "Real"
+)
+
+parcels <- paste(
+  "gdal vector pipeline",
+  "--progress",
+  "--config CPL_DEBUG=ON --config CPL_TIMESTAMP=ON --config CPL_LOG_ERRORS=ON",
+  "--config CPL_LOG=logs/state_fips=44.gdal.log --config GDAL_NUM_THREADS=ALL_CPUS",
+  "--config OGR_GPKG_NUM_THREADS=4 --config OGR_SQLITE_CACHE=4000000",
+  "--config OGR_SQLITE_SYNCHRONOUS=OFF",
+  "read --input parcels/LR_PARCEL_NATIONWIDE_FILE_US_2026_Q2.gpkg",
+  "--input-layer lr_parcel_us --open-option LIST_ALL_TABLES=NO",
+  '! filter --bbox "-71.907258,41.095834,-71.088571,42.018799" --where "statefp=\'44\'"',
+  "! sql --sql @sql/gpkg.schema.full.sql --dialect SQLITE",
+  "! make-valid",
+  "! set-geom-type --multi --skip",
+  paste(
+    sprintf("! set-field-type --field-name %s --field-type %s", names(fields), fields),
+    collapse = " "
+  ),
+  "! reproject --output-crs EPSG:4326"
+)
+
+render_reactflow(parcels, theme = "dark", height = 720)
+```
+
+## Pasted scripts just work
+
+The same parser accepts pasted PowerShell (or bash) scripts with line
+continuations – handy when your pipelines live in `.ps1` files:
+
+``` r
+
+ps1 <- 'gdal vector pipeline `
+  read --input "G:/data/states.gpkg" --input-layer states `
+! filter --where "STUSPS IN (\'GA\',\'FL\',\'AL\')" `
+! reproject --output-crs EPSG:5070 `
+! write --output southeast.fgb --output-format FlatGeobuf --overwrite'
+
+render_reactflow(ps1, direction = "LR", theme = "light", height = 320)
+```
+
+## From diagram back to data
+
+Every diagram above is backed by the same parsed model, so nothing here
+is render-only. The graph is plain data:
+
+``` r
+
+g <- pipeline_graph(triage)
+g$nodes[, c("command", "category", "branch_role", "description")]
+#> # A tibble: 8 × 4
+#>   command        category  branch_role description                            
+#>   <chr>          <chr>     <chr>       <chr>                                  
+#> 1 read           source    main        Read layer 'parcels_statefp13'         
+#> 2 tee            branch    main        Split stream into 2 side outputs       
+#> 3 sql            attribute tee         Transform attributes with SQL          
+#> 4 write          sink      tee         Write to valid_parcels.gpkg            
+#> 5 sql            attribute tee         Transform attributes with SQL          
+#> 6 check-geometry inspect   tee         Flag invalid or non-simple geometries  
+#> 7 write          sink      tee         Write to invalid_parcels.gpkg          
+#> 8 write          sink      main        Write to all_parcels.parquet as Parquet
+g$edges
+#> # A tibble: 7 × 4
+#>   from  to    kind  badge
+#>   <chr> <chr> <chr> <chr>
+#> 1 n1    n2    main  <NA> 
+#> 2 n2    n3    main  <NA> 
+#> 3 n3    n4    main  <NA> 
+#> 4 n2    n5    main  <NA> 
+#> 5 n5    n6    main  <NA> 
+#> 6 n6    n7    main  <NA> 
+#> 7 n2    n8    main  <NA>
+```
+
+and the pipeline serializes back to a canonical command line, a
+formatted shell script, or a GDALG specification via
+[`render_command_line()`](http://docs.jimbrig.com/gdalviz/reference/render_command_line.md),
+[`render_script()`](http://docs.jimbrig.com/gdalviz/reference/render_script.md),
+and
+[`as_gdalg()`](http://docs.jimbrig.com/gdalviz/reference/as_gdalg.md).

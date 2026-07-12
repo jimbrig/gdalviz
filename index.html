@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Visualize Modern GDAL Pipelines • gdalviz</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -13,6 +18,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Visualize Modern GDAL Pipelines">
 <meta name="description" content="Produces interactive or static visualizations of modern GDAL CLI pipelines.">
 <meta property="og:description" content="Produces interactive or static visualizations of modern GDAL CLI pipelines.">
+<meta property="og:image" content="http://docs.jimbrig.com/gdalviz/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -31,7 +37,15 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/gdalviz.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/pipeline-gallery.html">Pipeline gallery</a></li>
+  </ul>
+</li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -46,11 +60,23 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="gdalviz">gdalviz<a class="anchor" aria-label="anchor" href="#gdalviz"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="gdalviz-">gdalviz <a class="anchor" aria-label="anchor" href="#gdalviz-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <p><code>gdalviz</code> provides a modern framework for parsing, validating, and visualizing GDAL pipeline algorithms (for example <code>gdal vector pipeline ! ...</code> and GDALG <code>command_line</code> definitions).</p>
+<ul>
+<li>
+<strong>Contract-driven</strong>: steps and arguments are validated against GDAL’s own <code>--json-usage</code> metadata (bundled snapshot, refreshable from your installed GDAL via <code><a href="reference/gdalviz_refresh_contract.html">gdalviz_refresh_contract()</a></code>).</li>
+<li>
+<strong>Flexible input</strong>: raw pipeline strings, <code>.gdalg.json</code> files, and pasted bash/PowerShell scripts (line continuations and heredocs are normalized automatically).</li>
+<li>
+<strong>Semantic graphs</strong>: <code><a href="reference/pipeline_graph.html">pipeline_graph()</a></code> builds a renderer-agnostic dataflow model with category classification, feature-stream state propagation (CRS, geometry, fields), runtime <code>--config</code> grouping, the GDALG-omitted write step, and merging of long repeated-step runs (e.g. <code>set-field-type</code> chains).</li>
+<li>
+<strong>Renderers</strong>: interactive React Flow (<code><a href="reference/render_reactflow.html">render_reactflow()</a></code>, bundled - no node toolchain needed), AntV G6 (<code><a href="reference/render_g6.html">render_g6()</a></code>), and static Graphviz (<code><a href="reference/render_diagrammer.html">render_diagrammer()</a></code>).</li>
+</ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -83,11 +109,11 @@
 <div class="float">
 <img src="reference/figures/readme-example-1.png" alt="readme-example-1"><div class="figcaption">readme-example-1</div>
 </div>
-<p>or use the new <em>react-flow</em> based renderer:</p>
+<p>or use the <em>react-flow</em> based interactive renderer:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">pkg_sys_extdata</span><span class="op">(</span><span class="st">"pipelines/tiger_states.gdalg.json"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="reference/pipeline_graph.html">pipeline_graph</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="reference/render_reactflow.html">render_reactflow</a></span><span class="op">(</span>theme <span class="op">=</span> <span class="st">"dark"</span>, minimap <span class="op">=</span> <span class="cn">FALSE</span>, direction <span class="op">=</span> <span class="st">"TB"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pipelines"</span>, <span class="st">"tiger_states.gdalg.json"</span>, package <span class="op">=</span> <span class="st">"gdalviz"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/pipeline_graph.html">pipeline_graph</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/render_reactflow.html">render_reactflow</a></span><span class="op">(</span>theme <span class="op">=</span> <span class="st">"dark"</span>, minimap <span class="op">=</span> <span class="cn">FALSE</span>, direction <span class="op">=</span> <span class="st">"TB"</span><span class="op">)</span></span></code></pre></div>
 <div class="float">
 <img src="reference/figures/readme-example-2.png" alt="readme-example-2"><div class="figcaption">readme-example-2</div>
 </div>
@@ -128,7 +154,10 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
+<li><a href="https://github.com/jimbrig/gdalviz/actions/workflows/check.yml" class="external-link"><img src="https://github.com/jimbrig/gdalviz/actions/workflows/check.yml/badge.svg" alt="R CMD CHECK"></a></li>
 <li><a href="https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml" class="external-link"><img src="https://github.com/jimbrig/gdalviz/actions/workflows/pkgdown.yml/badge.svg" alt="pkgdown"></a></li>
+<li><a href="https://github.com/jimbrig/gdalviz/actions/workflows/changelog.yml" class="external-link"><img src="https://github.com/jimbrig/gdalviz/actions/workflows/changelog.yml/badge.svg" alt="Automate Changelog"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
 </ul>
 </div>
 

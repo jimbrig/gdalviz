@@ -80,7 +80,7 @@ shipped with the package, so no node toolchain is needed at run time.
 ``` r
 if (FALSE) { # \dontrun{
 gdalg <- system.file(
-  "extdata", "pipelines", "tiger_states_gdalg.json",
+  "extdata", "pipelines", "tiger_states.gdalg.json",
   package = "gdalviz"
 )
 pipeline_graph(gdalg) |> render_reactflow(theme = "dark")
