@@ -92,6 +92,24 @@
   text-overflow: ellipsis;
 }
 
+.gv-count {
+  font-family: var(--gv-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 4px;
+  padding: 0 5px;
+  flex-shrink: 0;
+}
+
+.gv-more {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--gv-text-faint);
+  margin-top: 4px;
+}
+
 .gv-badge {
   font-size: 9px;
   font-weight: 700;

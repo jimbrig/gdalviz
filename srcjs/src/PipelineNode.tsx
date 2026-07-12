@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { prettyValue } from "./format";
+import { CARD_MAX_ROWS, prettyValue } from "./format";
 import type { GraphNode } from "./types";
 
 const GLYPHS: Record<string, string> = {
@@ -33,6 +33,8 @@ function PipelineNodeInner({ data, selected }: NodeProps) {
   const valued = node.args.filter((a) => a.value !== null);
   const flags = node.args.filter((a) => a.value === null && a.kind === "flag");
   const glyph = GLYPHS[node.category] ?? GLYPHS.other;
+  const shown = valued.slice(0, CARD_MAX_ROWS);
+  const hidden = valued.length - shown.length;
 
   return (
     <div
@@ -44,6 +46,7 @@ function PipelineNodeInner({ data, selected }: NodeProps) {
         <span className="gv-node-title">
           <span className="gv-glyph">{glyph}</span>
           <span className="gv-command">{node.command}</span>
+          {node.count > 1 && <span className="gv-count">{"\u00d7"}{node.count}</span>}
         </span>
         <span className="gv-badge">{node.category_label}</span>
       </div>
@@ -51,12 +54,15 @@ function PipelineNodeInner({ data, selected }: NodeProps) {
         {valued.length === 0 && (
           <div className="gv-desc">{node.description ?? "no parameters"}</div>
         )}
-        {valued.map((a, i) => (
+        {shown.map((a, i) => (
           <div key={i} className="gv-arg-row">
             <span className="gv-arg-key">{a.name ?? "\u2022"}</span>
             <span className={valueClass(a.name)}>{prettyValue(a.value ?? "")}</span>
           </div>
         ))}
+        {hidden > 0 && (
+          <div className="gv-more">+{hidden} more {"\u2014"} click to inspect</div>
+        )}
         {flags.length > 0 && (
           <div className="gv-flags">
             {flags.map((f, i) => (

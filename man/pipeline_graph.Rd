@@ -4,13 +4,17 @@
 \alias{pipeline_graph}
 \title{Build a renderer-agnostic graph model from a parsed pipeline}
 \usage{
-pipeline_graph(x, contract = gdalviz_contract())
+pipeline_graph(x, contract = gdalviz_contract(), merge_repeated = TRUE)
 }
 \arguments{
 \item{x}{A \code{gdalviz_pipeline} (from \code{\link[=parse_pipeline]{parse_pipeline()}}) or a string/path
 accepted by \code{\link[=read_gdalg]{read_gdalg()}}.}
 
 \item{contract}{A \code{gdalviz_contract}.}
+
+\item{merge_repeated}{Merge runs of 3+ consecutive identical commands (e.g.
+the one-field-at-a-time \code{set-field-type} chains needed for schema
+overrides) into a single stacked node. Defaults to \code{TRUE}.}
 }
 \value{
 A \code{gdalviz_graph}: a list with \code{nodes} and \code{edges} tibbles.

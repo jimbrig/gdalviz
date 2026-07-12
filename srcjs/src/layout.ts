@@ -1,6 +1,6 @@
 import dagre from "@dagrejs/dagre";
 import { Position, type Node, type Edge } from "@xyflow/react";
-import { valueLines } from "./format";
+import { CARD_MAX_ROWS, valueLines } from "./format";
 import type { GraphNode, GraphEdge, WidgetOptions } from "./types";
 
 export const NODE_WIDTH = 264;
@@ -15,9 +15,10 @@ export function measureNode(n: GraphNode): number {
   if (valued.length === 0) {
     h += 18; // description line
   } else {
-    for (const a of valued) {
+    for (const a of valued.slice(0, CARD_MAX_ROWS)) {
       h += valueLines(a.value ?? "") * 15 + 5; // wrapped value rows
     }
+    if (valued.length > CARD_MAX_ROWS) h += 20; // "+N more" line
   }
   if (flags > 0) h += 28;
   return h;

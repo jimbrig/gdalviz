@@ -57,6 +57,32 @@ test_that("pipeline options become a runtime config node feeding the source", {
   expect_identical(config_edge$to, read_id)
 })
 
+test_that("runs of 3+ identical commands merge into one stacked node", {
+  sft <- paste(
+    sprintf("! set-field-type --field-name f%02d --field-type Integer", 1:12),
+    collapse = " "
+  )
+  cmd <- paste("read --input in.gpkg", sft, "! write --output out.parquet")
+
+  g <- pipeline_graph(cmd)
+  merged <- g$nodes[g$nodes$command == "set-field-type", ]
+  expect_identical(nrow(merged), 1L)
+  expect_identical(merged$count, 12L)
+  expect_identical(length(merged$args[[1]]), 12L)
+  expect_identical(merged$args[[1]][[1]]$name, "f01")
+  expect_identical(merged$args[[1]][[1]]$value, "Integer")
+
+  # opt-out keeps one node per step
+  g2 <- pipeline_graph(cmd, merge_repeated = FALSE)
+  expect_identical(sum(g2$nodes$command == "set-field-type"), 12L)
+
+  # short runs below the threshold are not merged
+  g3 <- pipeline_graph(
+    "read --input in.gpkg ! buffer 1 ! buffer 2 ! write --output out.fgb"
+  )
+  expect_identical(sum(g3$nodes$command == "buffer"), 2L)
+})
+
 test_that("GDALG pipelines without a write step get an implicit streamed sink", {
   g <- pipeline_graph("read --input in.gpkg ! reproject --output-crs EPSG:4326")
   sink <- g$nodes[g$nodes$implicit, ]

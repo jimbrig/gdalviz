@@ -18,6 +18,7 @@ export function Inspector({ node, onClose }: { node: GraphNode; onClose: () => v
       <div className="gv-inspector-header">
         <span className="gv-inspector-title" style={{ color: node.color }}>
           {node.command}
+          {node.count > 1 ? ` \u00d7${node.count}` : ""}
         </span>
         <button className="gv-btn-close" onClick={onClose} aria-label="close inspector">
           {"\u2715"}
