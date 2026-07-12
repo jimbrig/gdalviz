@@ -1,0 +1,25 @@
+# normalize line endings
+* text=auto eol=lf
+
+# windows scripts keep crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# binary assets
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.parquet binary
+*.gpkg binary
+*.zip binary
+
+# generated files: collapse in github diffs and language stats
+inst/htmlwidgets/pipeline_flow.js linguist-generated=true
+srcjs/bun.lock linguist-generated=true
+man/*.Rd linguist-documentation=true
+docs/** linguist-documentation=true
+
+# keep R the headline language despite the bundled widget source
+srcjs/** linguist-vendored=false
